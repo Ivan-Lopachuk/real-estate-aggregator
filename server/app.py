@@ -39,6 +39,8 @@ from typing import Optional
 import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 
 # aggregator/ лежить на рівень вище цього файлу (той самий репозиторій,
 # той самий код, що ганяє GitHub Actions) — додаємо корінь проєкту в
@@ -59,6 +61,11 @@ ACCESS_CODE = os.environ.get("ACCESS_CODE", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+# Client ID застосунку в Google Cloud Console ("Увійти через Google" на
+# дошці) — потрібен, щоб перевірити, що токен видано саме для нашого
+# сайту, а не підроблений/для чужого застосунку.
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 # Скільки сторінок кожного сайту опитувати за один запит у чаті —
 # менше, ніж у основного розкладу (там 10), щоб відповідь прийшла за
@@ -319,6 +326,44 @@ def chat():
         "criteria_summary": criteria_summary,
         "listings": [_listing_to_dict(l, fiber_map.get(l.uid)) for l in listings],
     })
+
+
+def _verify_google_token(token: str) -> Optional[dict]:
+    """
+    Перевіряє токен від кнопки "Увійти через Google" (JWT, підписаний
+    Google). Повертає {sub, email, name, picture} лише якщо підпис
+    справжній, токен виданий саме для GOOGLE_CLIENT_ID і Google
+    підтверджує, що email підтверджений — інакше None.
+    """
+    if not token or not GOOGLE_CLIENT_ID:
+        return None
+    try:
+        payload = google_id_token.verify_oauth2_token(
+            token, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except Exception:
+        log.info("google-вхід: недійсний токен", exc_info=True)
+        return None
+
+    if not payload.get("email_verified"):
+        return None
+
+    return {
+        "sub": payload.get("sub"),
+        "email": payload.get("email"),
+        "name": payload.get("name") or payload.get("email"),
+        "picture": payload.get("picture"),
+    }
+
+
+@app.route("/api/auth/google", methods=["POST"])
+def auth_google():
+    body = request.get_json(force=True, silent=True) or {}
+    token = str(body.get("id_token") or "")
+    user = _verify_google_token(token)
+    if user is None:
+        return jsonify({"error": "Не вдалося підтвердити вхід через Google."}), 401
+    return jsonify(user)
 
 
 @app.route("/api/health", methods=["GET"])
