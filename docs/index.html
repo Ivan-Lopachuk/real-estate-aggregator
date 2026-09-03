@@ -60,17 +60,14 @@
   }
   .hero-inner { max-width: 1040px; margin: 0 auto; text-align: center; position: relative; }
 
-  /* Заголовок по центру, кнопка "Вхід" на тій самій висоті праворуч —
-     середня колонка (auto) під h1, крайні (1fr/1fr) урівноважують. */
-  .hero-top {
-    display: grid; grid-template-columns: 1fr auto 1fr;
-    align-items: center; column-gap: 12px;
-  }
-  .hero-top h1 { grid-column: 2; }
-  .hero-top #authBtn { grid-column: 3; justify-self: end; }
+  /* Кнопка "Вхід" — точно у верхньому правому куті шапки, поза
+     потоком тексту, тож заголовок нижче може лишатись просто по
+     центру, не зважаючи на неї. */
+  #authBtn { position: absolute; top: 0; right: 0; }
+  .hero-top { position: relative; padding-top: 46px; }
   @media (max-width: 560px) {
-    .hero-top { grid-template-columns: 1fr; row-gap: 10px; }
-    .hero-top h1, .hero-top #authBtn { grid-column: 1; justify-self: center; }
+    #authBtn { position: static; margin-bottom: 14px; }
+    .hero-top { padding-top: 0; }
   }
 
   .hero-btn {
