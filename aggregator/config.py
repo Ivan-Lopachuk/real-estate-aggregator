@@ -84,7 +84,9 @@ class SearchCriteria:
                 )
         if self.living_area_min is not None:
             parts.append(f"від {self.living_area_min:.0f} м²")
-        if self.postal_codes:
+        if self.localities:
+            parts.append(", ".join(self.localities))
+        elif self.postal_codes:
             parts.append(", ".join(self.postal_codes))
         return " · ".join(parts)
 
