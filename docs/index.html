@@ -64,60 +64,26 @@
     padding: 2px 7px; border-radius: 5px; font-size: 12.5px; font-weight: 600;
   }
 
-  .page {
-    display: flex; align-items: flex-start; gap: 20px;
-    max-width: 1120px; margin: 0 auto; padding: 16px 16px 60px;
+  .chat-bar { display: flex; gap: 8px; max-width: 560px; margin: 4px auto 10px; }
+  .chat-bar input {
+    flex: 1; min-width: 0; font: inherit; font-size: 14px;
+    border: none; border-radius: 999px; padding: 11px 16px;
+    background: rgba(255,255,255,.95); color: var(--text);
   }
-  .wrap { flex: 1 1 480px; min-width: 0; max-width: 780px; padding: 0; }
+  .chat-bar input::placeholder { color: var(--muted); }
+  .chat-bar button {
+    flex: none; border: none; background: rgba(255,255,255,.24); color: #fff;
+    font-weight: 700; font-size: 14px; border-radius: 999px; padding: 11px 18px; cursor: pointer;
+  }
+  .chat-bar button:hover { background: rgba(255,255,255,.34); }
+  .chat-reply {
+    max-width: 560px; margin: 0 auto 10px; font-size: 13px; line-height: 1.5;
+    color: #fff; background: rgba(255,255,255,.16);
+    border-radius: 10px; padding: 9px 13px; text-align: left;
+  }
+  .chat-reply.error { background: rgba(127,29,29,.5); }
 
-  .chat-panel {
-    flex: 0 0 320px; display: flex; flex-direction: column;
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    box-shadow: var(--shadow); overflow: hidden;
-    position: sticky; top: 16px; height: calc(100vh - 32px); max-height: 720px;
-  }
-  .chat-panel h2 {
-    margin: 0; padding: 12px 14px; font-size: 14px; font-weight: 700;
-    border-bottom: 1px solid var(--border); flex: none;
-  }
-  .chat-messages {
-    flex: 1; overflow-y: auto; padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .chat-msg {
-    font-size: 13px; line-height: 1.5; padding: 8px 11px; border-radius: 12px;
-    max-width: 92%; white-space: pre-wrap;
-  }
-  .chat-msg-user {
-    align-self: flex-end; background: var(--accent); color: #fff;
-    border-bottom-right-radius: 3px;
-  }
-  .chat-msg-assistant {
-    align-self: flex-start; background: var(--bg); color: var(--text);
-    border-bottom-left-radius: 3px;
-  }
-  .chat-msg-pending { opacity: .6; }
-  .chat-results { display: flex; flex-direction: column; gap: 8px; }
-  .chat-results .card { margin-bottom: 0; }
-  .chat-form {
-    display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--border); flex: none;
-  }
-  .chat-form input {
-    flex: 1; min-width: 0; font: inherit; font-size: 13px;
-    border: 1px solid var(--border); border-radius: 999px;
-    padding: 7px 12px; background: var(--bg); color: var(--text);
-  }
-  .chat-form button {
-    flex: none; background: var(--accent); color: #fff; border-color: var(--accent);
-  }
-  @media (max-width: 860px) {
-    .page { flex-direction: column; }
-    .chat-panel {
-      flex: none; width: 100%; height: 380px; max-height: none;
-      position: static; order: -1;
-    }
-    .wrap { max-width: none; }
-  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 16px 16px 60px; }
 
   .bar { margin: 14px 0 16px; }
   .bar .count { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
@@ -177,40 +143,58 @@
     color: var(--muted); padding: 48px 0; text-align: center; font-size: 14px;
   }
   .error { color: #dc2626; }
+
+  .empty-state {
+    text-align: center; padding: 38px 20px 30px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  .empty-state .icon { font-size: 34px; line-height: 1; margin-bottom: 10px; }
+  .empty-state .title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .empty-state .text { font-size: 13.5px; color: var(--muted); max-width: 420px; margin: 0 auto; }
+  .empty-state .stat {
+    display: inline-block; margin-top: 14px; font-size: 12.5px; color: var(--muted);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px;
+  }
+  .suggestions {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px;
+  }
+  .suggestion-chip {
+    font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg); color: var(--accent);
+    border-radius: 999px; padding: 7px 14px;
+    transition: border-color .15s ease, background-color .15s ease;
+  }
+  .suggestion-chip:hover { border-color: var(--accent); background: var(--card); }
 </style>
 </head>
 <body>
 <header class="hero">
   <div class="hero-inner">
     <h1>Дошка оголошень нерухомості</h1>
+    <form class="chat-bar" id="chatForm">
+      <input type="text" id="chatInput" placeholder="напр. квартира в Антверпені до 700€, за останні 2 дні" autocomplete="off">
+      <button type="submit">🔍 Шукати</button>
+    </form>
+    <div class="chat-reply" id="chatReply" hidden></div>
     <div class="sub" id="sub">Завантаження…</div>
   </div>
 </header>
-<div class="page">
-  <aside class="chat-panel" id="chatPanel">
-    <h2>🤖 AI-пошук</h2>
-    <div class="chat-messages" id="chatMessages"></div>
-    <form class="chat-form" id="chatForm">
-      <input type="text" id="chatInput" placeholder="напр. квартира в Антверпені до 700€" autocomplete="off">
-      <button type="submit">➤</button>
-    </form>
-  </aside>
 
-  <div class="wrap">
-    <div class="bar" id="bar" hidden>
-      <span class="count" id="count"></span>
-      <div class="bar-actions">
-        <button id="filterBtn">Тільки непереглянуті</button>
-        <button id="markAllBtn">Позначити всі переглянутими</button>
-        <button id="resetSeenBtn">↺ Скинути переглянуте</button>
-        <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
-      </div>
+<div class="wrap">
+  <div class="bar" id="bar" hidden>
+    <span class="count" id="count"></span>
+    <div class="bar-actions">
+      <button id="filterBtn">Тільки непереглянуті</button>
+      <button id="markAllBtn">Позначити всі переглянутими</button>
+      <button id="resetSeenBtn">↺ Скинути переглянуте</button>
+      <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
     </div>
-
-    <div id="list"></div>
-    <div class="empty" id="empty" hidden>Немає оголошень для показу.</div>
-    <div class="error" id="error" hidden></div>
   </div>
+
+  <div id="list"></div>
+  <div class="empty" id="empty" hidden></div>
+  <div class="error" id="error" hidden></div>
 </div>
 
 <script>
@@ -223,6 +207,13 @@ var onlyUnseen = false;
 // лише оголошення саме з цього листа (нові за останні ~6 год), а не
 // всю історію. Переглянуті серед них лишаються видимими, просто сіріють.
 var sinceFilter = new URLSearchParams(location.search).get("since");
+
+// Що зараз показано в основному списку:
+//  "empty"  — сторінку щойно відкрито без ?since= і без пошуку в чаті — порожньо
+//  "since"  — відкрито за посиланням з листа — показуємо нові з того запуску
+//  "search" — щойно виконали пошук у чаті — показуємо його результати
+var mode = "empty";
+var searchResults = [];
 
 function loadOpened() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
@@ -376,31 +367,111 @@ function buildCard(l, onChange) {
   return card;
 }
 
+function currentBase() {
+  if (mode === "search") return searchResults;
+  if (mode === "since") {
+    return DATA.listings.filter(function (l) { return l.first_seen_utc >= sinceFilter; });
+  }
+  return [];
+}
+
 function render() {
   var list = document.getElementById("list");
   var empty = document.getElementById("empty");
+  var bar = document.getElementById("bar");
   list.innerHTML = "";
 
-  var base = sinceFilter
-    ? DATA.listings.filter(function (l) { return l.first_seen_utc >= sinceFilter; })
-    : DATA.listings;
-
+  var base = currentBase();
   var items = base.filter(function (l) {
     return onlyUnseen ? !isSeen(l.uid) : true;
   });
 
-  document.getElementById("count").textContent =
-    base.length + " оголошень, непереглянутих: " +
-    base.filter(function (l) { return !isSeen(l.uid); }).length;
+  bar.hidden = mode === "empty";
+  if (mode !== "empty") {
+    document.getElementById("count").textContent =
+      base.length + " оголошень, непереглянутих: " +
+      base.filter(function (l) { return !isSeen(l.uid); }).length;
+  }
 
   empty.hidden = items.length !== 0;
-  empty.textContent = sinceFilter
-    ? "Нових оголошень із цього запуску немає."
-    : "Немає оголошень для показу.";
+  if (empty.hidden) {
+    // порожній блок не показано — нічого будувати
+  } else if (mode === "since") {
+    empty.innerHTML = "";
+    empty.appendChild(buildEmptyState("📭", "Нових оголошень немає", "Із цього запуску нічого нового не знайшлось.", []));
+  } else if (mode === "search") {
+    empty.innerHTML = "";
+    empty.appendChild(buildEmptyState("🔍", "Нічого не знайдено", "Спробуй змінити критерії запиту — інше місто, вищу ціну або менше кімнат.", []));
+  } else {
+    empty.innerHTML = "";
+    var statText = DATA && DATA.listings
+      ? "Зараз відстежується " + DATA.listings.length + " оголошень за твоїми критеріями"
+      : "";
+    empty.appendChild(buildEmptyState(
+      "🏠",
+      "Почни з пошуку",
+      "Напиши запит у рядок пошуку вгорі — можна будь-яке місто чи район, навіть те, якого ще не було в критеріях. Або просто зачекай: лист із новими пропозиціями сам приведе сюди потрібні результати.",
+      SUGGESTIONS,
+      statText
+    ));
+  }
 
   items.forEach(function (l) {
     list.appendChild(buildCard(l, render));
   });
+}
+
+var SUGGESTIONS = [
+  "квартира в Генті до 800€",
+  "будинок в Антверпені, 3 спальні",
+  "квартира в Мерксемі за останні 3 дні",
+  "від 60 м² у Кортрейку до 900€"
+];
+
+function buildEmptyState(icon, title, text, suggestions, statText) {
+  var box = document.createElement("div");
+  box.className = "empty-state";
+
+  var iconEl = document.createElement("div");
+  iconEl.className = "icon";
+  iconEl.textContent = icon;
+  box.appendChild(iconEl);
+
+  var titleEl = document.createElement("div");
+  titleEl.className = "title";
+  titleEl.textContent = title;
+  box.appendChild(titleEl);
+
+  var textEl = document.createElement("div");
+  textEl.className = "text";
+  textEl.textContent = text;
+  box.appendChild(textEl);
+
+  if (statText) {
+    var statEl = document.createElement("div");
+    statEl.className = "stat";
+    statEl.textContent = statText;
+    box.appendChild(statEl);
+  }
+
+  if (suggestions && suggestions.length) {
+    var chips = document.createElement("div");
+    chips.className = "suggestions";
+    suggestions.forEach(function (s) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "suggestion-chip";
+      chip.textContent = s;
+      chip.addEventListener("click", function () {
+        document.getElementById("chatInput").value = s;
+        sendChatMessage(s);
+      });
+      chips.appendChild(chip);
+    });
+    box.appendChild(chips);
+  }
+
+  return box;
 }
 
 // ---------- AI-чат ----------------------------------------------------
@@ -420,31 +491,16 @@ function setChatAccessCode(code) {
   try { localStorage.setItem(CHAT_CODE_KEY, code); } catch (e) {}
 }
 
-function appendChatText(role, text) {
-  var messages = document.getElementById("chatMessages");
-  var el = document.createElement("div");
-  el.className = "chat-msg chat-msg-" + role;
+function showChatReply(text, isError) {
+  var el = document.getElementById("chatReply");
   el.textContent = text;
-  messages.appendChild(el);
-  messages.scrollTop = messages.scrollHeight;
-  return el;
-}
-
-function appendChatResults(listings) {
-  if (!listings || !listings.length) return;
-  var messages = document.getElementById("chatMessages");
-  var wrap = document.createElement("div");
-  wrap.className = "chat-results";
-  listings.forEach(function (l) {
-    wrap.appendChild(buildCard(l, function () {}));
-  });
-  messages.appendChild(wrap);
-  messages.scrollTop = messages.scrollHeight;
+  el.hidden = !text;
+  el.classList.toggle("error", !!isError);
 }
 
 function sendChatMessage(text) {
   if (!CHAT_BACKEND_URL) {
-    appendChatText("assistant", "Чат ще не налаштовано — див. SETUP-SERVER.md (треба вписати адресу сервера у CHAT_BACKEND_URL).");
+    showChatReply("Чат ще не налаштовано — див. SETUP-SERVER.md (треба вписати адресу сервера у CHAT_BACKEND_URL).", true);
     return;
   }
 
@@ -455,9 +511,7 @@ function sendChatMessage(text) {
     setChatAccessCode(code);
   }
 
-  appendChatText("user", text);
-  var pending = appendChatText("assistant", "…");
-  pending.classList.add("chat-msg-pending");
+  showChatReply("Шукаю…");
 
   fetch(CHAT_BACKEND_URL, {
     method: "POST",
@@ -473,19 +527,19 @@ function sendChatMessage(text) {
       return r.json();
     })
     .then(function (data) {
-      pending.remove();
       var reply = data.reply || "…";
-      appendChatText("assistant", reply);
+      showChatReply(reply);
       chatHistory.push({ role: "user", content: text });
       chatHistory.push({ role: "assistant", content: reply });
-      appendChatResults(data.listings);
+      mode = "search";
+      searchResults = data.listings || [];
+      render();
     })
     .catch(function (e) {
-      pending.remove();
-      appendChatText(
-        "assistant",
+      showChatReply(
         "Не вдалося зв'язатись із сервером: " + e.message +
-          " Якщо сервер довго не використовувався, спробуй ще раз за хвилину — він міг щойно 'прокидатись'."
+          " Якщо сервер довго не використовувався, спробуй ще раз за хвилину — він міг щойно 'прокидатись'.",
+        true
       );
     });
 }
@@ -516,11 +570,11 @@ function githubActionsUrl() {
 
 function init(data) {
   DATA = data;
+  if (sinceFilter) mode = "since";
   var checked = new Date(data.generated_utc);
   document.getElementById("sub").innerHTML =
     "Критерії: <code>" + (data.search_summary || "—") + "</code><br>" +
     "Остання перевірка: " + (isNaN(checked) ? "?" : checked.toLocaleString("uk-UA"));
-  document.getElementById("bar").hidden = false;
 
   var criteriaUrl = githubActionsUrl();
   if (criteriaUrl) {
