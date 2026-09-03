@@ -60,17 +60,9 @@
   }
   .hero-inner { max-width: 780px; margin: 0 auto; text-align: center; position: relative; }
 
-  /* Шапка поділена на три рівні третини (grid-template-columns: 1fr
-     1fr 1fr), і в обох рядках (кнопки, блок+пошук) елементи стоять
-     кожен по центру своєї третини — так усе лишається вирівняним в
-     одну лінію, як по вертикалі (кнопки одна над блоком), так і по
-     горизонталі (обидва рядки використовують ту саму сітку). */
-  .hero-row {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    column-gap: 16px; align-items: start;
-  }
-  .hero-row-buttons { margin-bottom: 18px; }
-  .hero-cell { display: flex; justify-content: center; }
+  /* Обидві кнопки разом в одному кутку (звичний вигляд шапки сайту) —
+     без розкидання по кутах з порожнечею між ними. */
+  .hero-actions { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
 
   .hero-btn {
     font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 999px;
@@ -88,16 +80,16 @@
   }
   .hero-btn-outline:hover { background: rgba(255,255,255,.22); border-color: #fff; }
 
-  .feature-cell { grid-column: 1; }
-  .search-cell { grid-column: 2 / span 2; display: block; }
-
+  .hero-content {
+    display: flex; gap: 18px; align-items: stretch; text-align: left; margin-top: 6px;
+  }
   .feature-card {
-    width: 100%; max-width: 230px;
+    flex: 0 0 230px;
     background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.07));
     border: 1px solid rgba(255,255,255,.30);
     border-radius: 14px; padding: 16px 17px;
     box-shadow: 0 4px 14px rgba(0,0,0,.10);
-    text-align: left;
+    display: flex; flex-direction: column; justify-content: center;
   }
   .feature-card-icon {
     display: inline-flex; align-items: center; justify-content: center;
@@ -106,12 +98,12 @@
   }
   .feature-card-title { color: #fff; font-weight: 700; font-size: 13px; margin-bottom: 6px; }
   .feature-card-text { color: rgba(255,255,255,.88); font-size: 11.5px; line-height: 1.6; }
+  .search-cell { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   .search-cell .chat-bar { max-width: none; margin: 0 0 8px; }
   .search-cell .chat-reply { max-width: none; margin: 0; text-align: left; }
   @media (max-width: 640px) {
-    .hero-row-content { display: block; }
-    .feature-cell { margin: 0 auto 16px; }
-    .search-cell { grid-column: auto; }
+    .hero-content { flex-direction: column; }
+    .feature-card { flex: none; }
   }
 
   .sub-panel {
@@ -274,22 +266,19 @@
 <body>
 <header class="hero">
   <div class="hero-inner">
-    <div class="hero-row hero-row-buttons">
-      <div class="hero-cell"><button type="button" id="subToggleBtn" class="hero-btn hero-btn-solid">✉ Розсилка</button></div>
-      <div class="hero-cell"></div>
-      <div class="hero-cell"><button type="button" id="authBtn" class="hero-btn hero-btn-outline">Вхід</button></div>
+    <div class="hero-actions">
+      <button type="button" id="subToggleBtn" class="hero-btn hero-btn-solid">✉ Розсилка</button>
+      <button type="button" id="authBtn" class="hero-btn hero-btn-outline">Вхід</button>
     </div>
     <h1>Дошка оголошень нерухомості</h1>
-    <div class="hero-row hero-row-content">
-      <div class="hero-cell feature-cell">
-        <div class="feature-card">
-          <div class="feature-card-icon">✉</div>
-          <div class="feature-card-title">Що робить "Розсилка"</div>
-          <div class="feature-card-text">
-            Увійди через Google, вкажи місто й критерії пошуку — і листи з
-            новими оголошеннями приходитимуть на твою пошту автоматично, з
-            обраним інтервалом (щогодини, раз на добу тощо).
-          </div>
+    <div class="hero-content">
+      <div class="feature-card">
+        <div class="feature-card-icon">✉</div>
+        <div class="feature-card-title">Що робить "Розсилка"</div>
+        <div class="feature-card-text">
+          Увійди через Google, вкажи місто й критерії пошуку — і листи з
+          новими оголошеннями приходитимуть на твою пошту автоматично, з
+          обраним інтервалом (щогодини, раз на добу тощо).
         </div>
       </div>
       <div class="search-cell">
