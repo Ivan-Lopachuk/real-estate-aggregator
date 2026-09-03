@@ -129,11 +129,13 @@
 "use strict";
 
 var STORE_KEY = "reab:opened";        // { uid: ISO-час коли позначено }
-var onlyUnseen = false;
 var DATA = null;
 // Якщо дошку відкрито за посиланням з листа (?since=...), спершу
-// показуємо лише оголошення саме з цього листа, а не всю історію.
+// показуємо лише оголошення саме з цього листа, а не всю історію, і
+// одразу вмикаємо фільтр "тільки непереглянуті" — щоб не доводилось
+// клікати вручну щоразу.
 var sinceFilter = new URLSearchParams(location.search).get("since");
+var onlyUnseen = !!sinceFilter;
 
 function loadOpened() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
@@ -220,9 +222,11 @@ function render() {
     base.filter(function (l) { return !isSeen(l.uid); }).length;
 
   empty.hidden = items.length !== 0;
-  empty.textContent = sinceFilter && !base.length
-    ? "Оголошень із цього листа тут більше немає — можливо, минуло багато часу."
-    : "Немає оголошень для показу.";
+  empty.textContent = !sinceFilter
+    ? "Немає оголошень для показу."
+    : !base.length
+      ? "Оголошень із цього листа тут більше немає — можливо, минуло багато часу."
+      : "Усі оголошення з цього листа вже позначені переглянутими.";
 
   items.forEach(function (l) {
     var seen = isSeen(l.uid);
@@ -346,6 +350,10 @@ function init(data) {
     "Остання перевірка: " + (isNaN(checked) ? "?" : checked.toLocaleString("uk-UA")) +
     " · показано за останні " + (data.recent_days || 90) + " дн.";
   document.getElementById("bar").hidden = false;
+
+  var filterBtn = document.getElementById("filterBtn");
+  filterBtn.classList.toggle("on", onlyUnseen);
+  filterBtn.textContent = onlyUnseen ? "Показано: тільки нові" : "Тільки непереглянуті";
 
   var criteriaUrl = githubActionsUrl();
   if (criteriaUrl) {
