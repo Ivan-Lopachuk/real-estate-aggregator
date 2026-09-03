@@ -64,14 +64,6 @@
     letter-spacing: -.02em; line-height: 1.25; margin: 0 0 8px;
     text-shadow: 0 1px 3px rgba(0,0,0,.18);
   }
-  .hero .sub {
-    color: rgba(255,255,255,.92); font-size: 13.5px; font-weight: 500;
-    line-height: 1.6; margin: 0;
-  }
-  .hero .sub code {
-    background: rgba(255,255,255,.22); color: #fff;
-    padding: 2px 7px; border-radius: 5px; font-size: 12.5px; font-weight: 600;
-  }
 
   .chat-bar { display: flex; gap: 8px; max-width: 560px; margin: 4px auto 10px; }
   .chat-bar input {
@@ -204,7 +196,6 @@
       <button type="submit">🔍 Шукати</button>
     </form>
     <div class="chat-reply" id="chatReply" hidden></div>
-    <div class="sub" id="sub">Завантаження…</div>
   </div>
 </header>
 
@@ -582,7 +573,6 @@ function sendChatMessage(text) {
       showChatReply(reply);
       chatHistory.push({ role: "user", content: text });
       chatHistory.push({ role: "assistant", content: reply });
-      if (data.criteria_summary) setCriteriaLine(data.criteria_summary);
       mode = "search";
       searchResults = data.listings || [];
       render();
@@ -608,27 +598,9 @@ function initChat() {
   });
 }
 
-function setCriteriaLine(text) {
-  var sub = document.getElementById("sub");
-  if (!text) {
-    sub.hidden = true;
-    sub.innerHTML = "";
-    return;
-  }
-  sub.hidden = false;
-  sub.innerHTML = "Критерії: <code>" + text + "</code>";
-}
-
 function init(data) {
   DATA = data;
-  if (sinceFilter) {
-    mode = "since";
-    setCriteriaLine(data.search_summary);
-  } else {
-    // Порожній режим — на сторінці ще нічого не шукали, тож і старі
-    // критерії з config.yaml тут показувати не варто.
-    setCriteriaLine(null);
-  }
+  if (sinceFilter) mode = "since";
 
   document.getElementById("filterBtn").addEventListener("click", function () {
     onlyUnseen = !onlyUnseen;
@@ -663,7 +635,6 @@ fetch("data.json?" + Date.now())
   })
   .then(init)
   .catch(function (e) {
-    document.getElementById("sub").textContent = "";
     var err = document.getElementById("error");
     err.hidden = false;
     err.textContent = "Не вдалося завантажити список (data.json): " + e.message +
