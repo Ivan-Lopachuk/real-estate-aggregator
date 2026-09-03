@@ -66,16 +66,15 @@
 
   .wrap { max-width: 780px; margin: 0 auto; padding: 16px 16px 60px; }
 
-  .bar {
-    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-    margin: 14px 0 16px;
-  }
-  .bar .count { font-size: 13px; color: var(--muted); margin-right: auto; }
+  .bar { margin: 14px 0 16px; }
+  .bar .count { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .bar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
   button, .link-btn {
-    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 600; line-height: 1.4; cursor: pointer;
+    box-sizing: border-box; -webkit-appearance: none; appearance: none;
     border: 1px solid var(--border); background: var(--card); color: var(--text);
-    text-decoration: none; display: inline-block;
-    padding: 6px 13px; border-radius: 999px;
+    text-decoration: none; display: inline-flex; align-items: center;
+    padding: 6px 13px; border-radius: 999px; margin: 0;
     transition: border-color .15s ease, color .15s ease, background-color .15s ease;
   }
   button:hover, .link-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -137,10 +136,12 @@
 <div class="wrap">
   <div class="bar" id="bar" hidden>
     <span class="count" id="count"></span>
-    <button id="filterBtn">Тільки непереглянуті</button>
-    <button id="markAllBtn">Позначити всі переглянутими</button>
-    <button id="resetSeenBtn">↺ Скинути переглянуте</button>
-    <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
+    <div class="bar-actions">
+      <button id="filterBtn">Тільки непереглянуті</button>
+      <button id="markAllBtn">Позначити всі переглянутими</button>
+      <button id="resetSeenBtn">↺ Скинути переглянуте</button>
+      <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
+    </div>
   </div>
 
   <div id="list"></div>
