@@ -1,8 +1,27 @@
 {
- "generated_utc": "2026-09-03T12:23:56+00:00",
+ "generated_utc": "2026-09-03T13:17:21+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · 9000, 8500",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21812751",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21812751",
+   "title": "Apartment · 1 спалень · Kortrijk",
+   "price": 750.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 575.0,
+   "locality": "Kortrijk",
+   "postal_code": "8500",
+   "street": "Jan Breydellaan",
+   "house_number": "156",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/1bf9734a-f531-404a-a166-745fc07b96fb/300x300/abd76713f227f103b1c8a82f5cc81660.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:17:15+00:00"
+  },
   {
    "uid": "immoweb:21811419",
    "site": "immoweb",
