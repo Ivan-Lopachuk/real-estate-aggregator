@@ -97,6 +97,12 @@
     text-decoration: none; background: var(--accent); color: #fff;
     padding: 6px 12px; border-radius: 8px; font-weight: 600;
   }
+  .link-btn {
+    font: inherit; cursor: pointer; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); text-decoration: none;
+    padding: 6px 12px; border-radius: 8px; display: inline-block;
+  }
+  .link-btn:hover { border-color: var(--accent); color: var(--accent); }
   .empty, .error { color: var(--muted); padding: 40px 0; text-align: center; }
   .error { color: #dc2626; }
 </style>
@@ -111,6 +117,7 @@
     <span class="count" id="count"></span>
     <button id="filterBtn">Тільки непереглянуті</button>
     <button id="markAllBtn">Позначити всі переглянутими</button>
+    <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
   </div>
 
   <div id="list"></div>
@@ -319,6 +326,18 @@ function render() {
   });
 }
 
+function githubActionsUrl() {
+  // Дошка сама живе на "<логін>.github.io/<репозиторій>/" (GitHub
+  // Pages), тож адресу форми зміни критеріїв можна вивести з адреси
+  // самої сторінки — окремо нічого налаштовувати не треба.
+  var host = location.hostname;
+  if (host.indexOf(".github.io") === -1) return null;
+  var owner = host.split(".")[0];
+  var repo = location.pathname.split("/").filter(Boolean)[0];
+  if (!owner || !repo) return null;
+  return "https://github.com/" + owner + "/" + repo + "/actions/workflows/check.yml";
+}
+
 function init(data) {
   DATA = data;
   var checked = new Date(data.generated_utc);
@@ -327,6 +346,13 @@ function init(data) {
     "Остання перевірка: " + (isNaN(checked) ? "?" : checked.toLocaleString("uk-UA")) +
     " · показано за останні " + (data.recent_days || 90) + " дн.";
   document.getElementById("bar").hidden = false;
+
+  var criteriaUrl = githubActionsUrl();
+  if (criteriaUrl) {
+    var criteriaLink = document.getElementById("criteriaLink");
+    criteriaLink.href = criteriaUrl;
+    criteriaLink.hidden = false;
+  }
 
   document.getElementById("filterBtn").addEventListener("click", function () {
     onlyUnseen = !onlyUnseen;
