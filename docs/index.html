@@ -60,6 +60,19 @@
   }
   .hero-inner { max-width: 1040px; margin: 0 auto; text-align: center; position: relative; }
 
+  /* Заголовок по центру, кнопка "Вхід" на тій самій висоті праворуч —
+     середня колонка (auto) під h1, крайні (1fr/1fr) урівноважують. */
+  .hero-top {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; column-gap: 12px;
+  }
+  .hero-top h1 { grid-column: 2; }
+  .hero-top #authBtn { grid-column: 3; justify-self: end; }
+  @media (max-width: 560px) {
+    .hero-top { grid-template-columns: 1fr; row-gap: 10px; }
+    .hero-top h1, .hero-top #authBtn { grid-column: 1; justify-self: center; }
+  }
+
   .hero-btn {
     font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 999px;
     cursor: pointer; border: none; white-space: nowrap;
@@ -79,7 +92,7 @@
   /* Один рядок: зліва — кнопка "Розсилка" над карткою-описом (стовпчик),
      посередині — пошук, справа — кнопка "Вхід" на висоті пошуку. */
   .hero-content {
-    display: flex; gap: 20px; align-items: center; text-align: left; margin-top: 14px;
+    display: flex; gap: 20px; align-items: center; text-align: left; margin-top: 6px;
   }
   .hero-left { flex: 0 0 230px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
   .feature-card {
@@ -264,7 +277,10 @@
 <body>
 <header class="hero">
   <div class="hero-inner">
-    <h1>Дошка оголошень нерухомості</h1>
+    <div class="hero-top">
+      <h1>Дошка оголошень нерухомості</h1>
+      <button type="button" id="authBtn" class="hero-btn hero-btn-outline">Вхід</button>
+    </div>
     <div class="hero-content">
       <div class="hero-left">
         <button type="button" id="subToggleBtn" class="hero-btn hero-btn-solid">✉ Розсилка</button>
@@ -285,7 +301,6 @@
         </form>
         <div class="chat-reply" id="chatReply" hidden></div>
       </div>
-      <button type="button" id="authBtn" class="hero-btn hero-btn-outline">Вхід</button>
     </div>
   </div>
 </header>
