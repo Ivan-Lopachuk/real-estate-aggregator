@@ -41,7 +41,11 @@
   body {
     margin: 0;
     font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 15% 0%, rgba(67,56,202,.10), transparent 55%),
+      radial-gradient(circle at 100% 10%, rgba(37,99,235,.08), transparent 45%),
+      var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     -webkit-font-smoothing: antialiased;
   }
@@ -531,6 +535,7 @@ function sendChatMessage(text) {
       showChatReply(reply);
       chatHistory.push({ role: "user", content: text });
       chatHistory.push({ role: "assistant", content: reply });
+      if (data.criteria_summary) setCriteriaLine(data.criteria_summary);
       mode = "search";
       searchResults = data.listings || [];
       render();
@@ -568,13 +573,14 @@ function githubActionsUrl() {
   return "https://github.com/" + owner + "/" + repo + "/actions/workflows/check.yml";
 }
 
+function setCriteriaLine(text) {
+  document.getElementById("sub").innerHTML = "Критерії: <code>" + (text || "—") + "</code>";
+}
+
 function init(data) {
   DATA = data;
   if (sinceFilter) mode = "since";
-  var checked = new Date(data.generated_utc);
-  document.getElementById("sub").innerHTML =
-    "Критерії: <code>" + (data.search_summary || "—") + "</code><br>" +
-    "Остання перевірка: " + (isNaN(checked) ? "?" : checked.toLocaleString("uk-UA"));
+  setCriteriaLine(data.search_summary);
 
   var criteriaUrl = githubActionsUrl();
   if (criteriaUrl) {
