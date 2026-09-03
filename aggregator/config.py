@@ -69,19 +69,35 @@ class SearchCriteria:
 
     @property
     def summary(self) -> str:
-        """Короткий людський опис критеріїв — для листа і веб-сторінки."""
+        """
+        Короткий людський опис критеріїв — для листа і веб-сторінки.
+
+        Якщо задана лише одна межа діапазону (напр. лише price_max, без
+        price_min — типово для запитів через AI-чат, де людина рідко
+        називає обидві межі) — не показуємо "…", а пишемо "до X"/"від X".
+        """
         parts: list[str] = ["оренда" if self.transaction == "rent" else "купівля"]
-        if self.price_min is not None or self.price_max is not None:
-            lo = f"{self.price_min:,.0f}".replace(",", " ") if self.price_min is not None else "…"
-            hi = f"{self.price_max:,.0f}".replace(",", " ") if self.price_max is not None else "…"
-            parts.append(f"{lo}–{hi} €")
-        if self.bedrooms_min is not None or self.bedrooms_max is not None:
+
+        def _fmt(n: float) -> str:
+            return f"{n:,.0f}".replace(",", " ")
+
+        if self.price_min is not None and self.price_max is not None:
+            parts.append(f"{_fmt(self.price_min)}–{_fmt(self.price_max)} €")
+        elif self.price_max is not None:
+            parts.append(f"до {_fmt(self.price_max)} €")
+        elif self.price_min is not None:
+            parts.append(f"від {_fmt(self.price_min)} €")
+
+        if self.bedrooms_min is not None and self.bedrooms_max is not None:
             if self.bedrooms_min == self.bedrooms_max:
                 parts.append(f"{self.bedrooms_min} спалень")
             else:
-                parts.append(
-                    f"{self.bedrooms_min or '…'}–{self.bedrooms_max or '…'} спалень"
-                )
+                parts.append(f"{self.bedrooms_min}–{self.bedrooms_max} спалень")
+        elif self.bedrooms_max is not None:
+            parts.append(f"до {self.bedrooms_max} спалень")
+        elif self.bedrooms_min is not None:
+            parts.append(f"від {self.bedrooms_min} спалень")
+
         if self.living_area_min is not None:
             parts.append(f"від {self.living_area_min:.0f} м²")
         if self.localities:
