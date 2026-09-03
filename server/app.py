@@ -50,6 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from aggregator import geocoding, proximus  # noqa: E402
 from aggregator.config import HttpSettings, SearchCriteria  # noqa: E402
 from aggregator.filters import ListingFilter  # noqa: E402
+from aggregator.github_store import GitHubStoreError, read_json, write_json, delete_json  # noqa: E402
 from aggregator.models import Listing  # noqa: E402
 import aggregator.scrapers  # noqa: E402,F401  (імпорт реєструє immoweb/zimmo)
 from aggregator.scrapers.base import available_scrapers, get_scraper  # noqa: E402
@@ -66,6 +67,17 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 # дошці) — потрібен, щоб перевірити, що токен видано саме для нашого
 # сайту, а не підроблений/для чужого застосунку.
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+
+# Щоб сервер міг зберігати профілі розсилки (profiles/<id>.json) прямо
+# в репозиторії — сам сервер нічого не пам'ятає між перезапусками.
+# GH_WRITE_TOKEN — fine-grained токен із правом Contents: Read and
+# write лише на цей репозиторій. GH_REPO — "власник/репозиторій",
+# напр. "nastya/real-estate-aggregator".
+GH_WRITE_TOKEN = os.environ.get("GH_WRITE_TOKEN", "")
+GH_REPO = os.environ.get("GH_REPO", "")
+
+_MIN_INTERVAL_HOURS = 1
+_MAX_INTERVAL_HOURS = 168  # тиждень
 
 # Скільки сторінок кожного сайту опитувати за один запит у чаті —
 # менше, ніж у основного розкладу (там 10), щоб відповідь прийшла за
@@ -364,6 +376,164 @@ def auth_google():
     if user is None:
         return jsonify({"error": "Не вдалося підтвердити вхід через Google."}), 401
     return jsonify(user)
+
+
+def _authenticated_user() -> Optional[dict]:
+    """Читає `Authorization: Bearer <google-id-token>` і перевіряє його."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    return _verify_google_token(auth[len("Bearer "):].strip())
+
+
+def _profile_path(google_sub: str) -> str:
+    return f"profiles/{google_sub}.json"
+
+
+def _opt_num(value) -> Optional[float]:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _opt_int(value) -> Optional[int]:
+    if value in (None, ""):
+        return None
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[str]]:
+    """
+    Перевіряє форму розсилки. Повертає (готовий профіль без службових
+    полів, None) якщо все гаразд, або (None, повідомлення про помилку).
+    """
+    place = str(body.get("place") or "").strip()
+    if not place:
+        return None, "Вкажи місто чи район."
+
+    postal_codes = geocoding.postal_codes_for_name(place)
+    if not postal_codes:
+        return None, f"Не знайшов населеного пункту «{place}» у Бельгії."
+
+    notify_email = str(body.get("notify_email") or "").strip()
+    if "@" not in notify_email or "." not in notify_email.split("@")[-1]:
+        return None, "Вкажи коректну електронну пошту для листів."
+
+    try:
+        interval_hours = int(body.get("interval_hours"))
+    except (TypeError, ValueError):
+        return None, "Вкажи інтервал у годинах (число)."
+    if not (_MIN_INTERVAL_HOURS <= interval_hours <= _MAX_INTERVAL_HOURS):
+        return None, f"Інтервал має бути від {_MIN_INTERVAL_HOURS} до {_MAX_INTERVAL_HOURS} год."
+
+    property_types = [
+        str(t).lower() for t in (body.get("property_types") or [])
+        if str(t).lower() in ("house", "apartment")
+    ] or ["house", "apartment"]
+
+    search = {
+        "transaction": "sale" if body.get("transaction") == "sale" else "rent",
+        "property_types": property_types,
+        "price_min": _opt_num(body.get("price_min")),
+        "price_max": _opt_num(body.get("price_max")),
+        "bedrooms_min": _opt_int(body.get("bedrooms_min")),
+        "bedrooms_max": _opt_int(body.get("bedrooms_max")),
+        "living_area_min": _opt_num(body.get("living_area_min")),
+        "postal_codes": postal_codes,
+        "localities": [place],
+    }
+    return {
+        "place": place,
+        "search": search,
+        "interval_hours": interval_hours,
+        "notify_email": notify_email,
+    }, None
+
+
+@app.route("/api/subscription", methods=["GET"])
+def get_subscription():
+    user = _authenticated_user()
+    if user is None:
+        return jsonify({"error": "потрібен вхід через Google"}), 401
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Розсилка ще не налаштована на сервері."}), 500
+
+    try:
+        data, _sha = read_json(GH_REPO, GH_WRITE_TOKEN, _profile_path(user["sub"]))
+    except GitHubStoreError:
+        log.exception("розсилка: не вдалося прочитати профіль")
+        return jsonify({"error": "Не вдалося прочитати збережену розсилку."}), 502
+
+    return jsonify({"subscription": data})
+
+
+@app.route("/api/subscription", methods=["POST"])
+def save_subscription():
+    user = _authenticated_user()
+    if user is None:
+        return jsonify({"error": "потрібен вхід через Google"}), 401
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Розсилка ще не налаштована на сервері."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    profile, error = _validate_subscription_body(body)
+    if error:
+        return jsonify({"error": error}), 400
+
+    path = _profile_path(user["sub"])
+    try:
+        existing, sha = read_json(GH_REPO, GH_WRITE_TOKEN, path)
+    except GitHubStoreError:
+        log.exception("розсилка: не вдалося прочитати попередній профіль")
+        return jsonify({"error": "Не вдалося зберегти розсилку (читання)."}), 502
+
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    profile["google_sub"] = user["sub"]
+    profile["login_email"] = user["email"]
+    profile["created_utc"] = (existing or {}).get("created_utc") or now
+    profile["updated_utc"] = now
+    profile["last_sent_utc"] = (existing or {}).get("last_sent_utc")
+
+    try:
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, path, profile,
+            message=f"Розсилка: оновлено профіль {user['email']}",
+            sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("розсилка: не вдалося записати профіль")
+        return jsonify({"error": "Не вдалося зберегти розсилку (запис)."}), 502
+
+    return jsonify({"subscription": profile})
+
+
+@app.route("/api/subscription", methods=["DELETE"])
+def delete_subscription():
+    user = _authenticated_user()
+    if user is None:
+        return jsonify({"error": "потрібен вхід через Google"}), 401
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Розсилка ще не налаштована на сервері."}), 500
+
+    path = _profile_path(user["sub"])
+    try:
+        existing, sha = read_json(GH_REPO, GH_WRITE_TOKEN, path)
+        if existing is not None:
+            delete_json(
+                GH_REPO, GH_WRITE_TOKEN, path, sha,
+                message=f"Розсилка: скасовано для {user['email']}",
+            )
+    except GitHubStoreError:
+        log.exception("розсилка: не вдалося скасувати профіль")
+        return jsonify({"error": "Не вдалося скасувати розсилку."}), 502
+
+    return jsonify({"ok": True})
 
 
 @app.route("/api/health", methods=["GET"])
