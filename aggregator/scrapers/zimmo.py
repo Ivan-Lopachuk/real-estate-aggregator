@@ -37,15 +37,16 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import datetime, timezone
 from typing import Iterator, Optional
 
+from .. import geocoding
 from ..models import Listing
 from .base import BaseScraper, register
 
 log = logging.getLogger(__name__)
 
 _BASE_URL = "https://www.zimmo.be"
-_PLACES_URL = "https://geo-api.zimmo.be/places"
 _PAGE_SIZE = 21
 
 _TRANSACTION_TO_SEGMENT = {"rent": "te-huur", "sale": "te-koop"}
@@ -82,52 +83,22 @@ class ZimmoScraper(BaseScraper):
         """
         Список частин адреси з населеним пунктом, напр. ["/nl/gent-9000"].
         Якщо поштові індекси не задані — повертає ["/nl/zoek"] (уся
-        Бельгія).
+        Бельгія). Сам пошук slug'а за поштовим індексом — у
+        aggregator/geocoding.py (спільний з AI-чатом довідник).
         """
         if not self.criteria.postal_codes:
             return ["/nl/zoek"]
 
-        wanted = set(self.criteria.postal_codes)
-        places = self._load_places()
+        places = geocoding.load_places(timeout=self.http.timeout_seconds, session=self.session)
+        slugs, found = geocoding.slugs_for_postal_codes(self.criteria.postal_codes, places)
 
-        prefixes: list[str] = []
-        found_codes: set[str] = set()
-        for place in places:
-            # Поштовий індекс лежить не у самому записі, а в
-            # адміністративній одиниці, до якої він прив'язаний.
-            admin_area = place.get("administrativeArea") or {}
-            code = str(admin_area.get("postalCode") or "")
-            if code not in wanted:
-                continue
-            slug = (place.get("slugs") or {}).get("nl") or admin_area.get("slug")
-            if not slug:
-                continue
-            prefix = f"/nl/{slug}-{code}"
-            if prefix not in prefixes:
-                prefixes.append(prefix)
-            found_codes.add(code)
-
-        missing = wanted - found_codes
+        missing = set(self.criteria.postal_codes) - found
         if missing:
             log.warning(
                 "zimmo: не знайдено населений пункт для поштових індексів: %s",
                 ", ".join(sorted(missing)),
             )
-        return prefixes
-
-    def _load_places(self) -> list[dict]:
-        """
-        Завантажує довідник усіх населених пунктів Бельгії (одним запитом)
-        з відкритого API geo-api.zimmo.be. Потрібен лише для перетворення
-        поштового індексу з config.yaml на частину адреси сторінки пошуку.
-        """
-        try:
-            resp = self.session.get(_PLACES_URL, timeout=self.http.timeout_seconds)
-            resp.raise_for_status()
-            return list((resp.json().get("places") or {}).values())
-        except Exception:
-            log.exception("zimmo: не вдалося завантажити довідник населених пунктів")
-            return []
+        return [f"/nl/{slug}" for slug in slugs]
 
     # -- завантаження і розбір сторінки пошуку ------------------------
 
@@ -217,8 +188,21 @@ class ZimmoScraper(BaseScraper):
             street=street,
             house_number=house_number,
             photo_url=item.get("hoofdFoto") or None,
+            listed_at=self._to_iso_timestamp(item.get("toegevoegd")),
             raw=item,
         )
+
+    @staticmethod
+    def _to_iso_timestamp(unix_seconds) -> Optional[str]:
+        """Zimmo дає час додавання оголошення як unix-час (текстом)."""
+        if not unix_seconds:
+            return None
+        try:
+            return datetime.fromtimestamp(int(unix_seconds), tz=timezone.utc).isoformat(
+                timespec="seconds"
+            )
+        except (TypeError, ValueError, OSError):
+            return None
 
     @staticmethod
     def _split_address(address: Optional[str]) -> tuple[Optional[str], Optional[str]]:

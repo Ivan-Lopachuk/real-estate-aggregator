@@ -34,6 +34,7 @@ class Listing:
     street: Optional[str] = None            # назва вулиці (якщо сайт її дає)
     house_number: Optional[str] = None      # номер будинку
     photo_url: Optional[str] = None         # адреса головного фото оголошення
+    listed_at: Optional[str] = None         # коли сайт виставив/оновив оголошення (ISO, UTC)
 
     # Повна сира відповідь сайту — на випадок, якщо колись знадобляться
     # додаткові поля. `repr=False`, щоб не засмічувати вивід у консолі.

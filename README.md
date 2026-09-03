@@ -77,6 +77,7 @@ real-estate-aggregator/
 │   ├── notifier.py        ← сповіщення: у термінал і/або на email (smtplib)
 │   ├── proximus.py        ← перевіряє, чи є за адресою оптика Proximus
 │   ├── config_editor.py   ← точково змінює розділ search: у config.yaml
+│   ├── geocoding.py       ← назва міста/району -> поштові індекси (Zimmo-довідник)
 │   ├── runner.py          ← «диригент»: об'єднує все в один робочий цикл
 │   │
 │   └── scrapers/          ← по одному модулю на кожен сайт
@@ -84,6 +85,10 @@ real-estate-aggregator/
 │       ├── base.py        ← BaseScraper: спільний інтерфейс + реєстр
 │       ├── immoweb.py     ← scraper конкретно для Immoweb.be
 │       └── zimmo.py       ← scraper конкретно для Zimmo.be
+│
+├── server/                ← окремий сервер для AI-чату на дошці (Render)
+│   ├── app.py              ← приймає повідомлення, шукає живо через aggregator/
+│   └── requirements.txt
 │
 ├── scripts/
 │   └── apply_search_criteria.py  ← застосовує форму GitHub Actions до config.yaml
@@ -97,7 +102,9 @@ real-estate-aggregator/
     ├── test_zimmo_scraper.py
     ├── test_proximus.py
     ├── test_config_editor.py
-    └── test_apply_search_criteria.py
+    ├── test_apply_search_criteria.py
+    ├── test_geocoding.py
+    └── test_server_app.py
 ```
 
 ### Що робить кожен файл (простими словами)
@@ -117,6 +124,8 @@ real-estate-aggregator/
 | **`aggregator/proximus.py`** | Для оголошень з відомою вулицею й номером будинку питає сайт Proximus, чи є там оптоволоконний інтернет (fiber), і повертає відповідь. Результат зберігається в базі й показується на веб-дошці значком «⚡ оптика». |
 | **`aggregator/config_editor.py`** | Змінює в `config.yaml` лише розділ `search:` (ціну, спальні, місто тощо), не чіпаючи решту файлу — коментарі й інші налаштування лишаються як були. Використовується формою на GitHub (нижче), а в майбутньому — і Telegram-ботом. |
 | **`scripts/apply_search_criteria.py`** | Читає значення з форми GitHub Actions (Run workflow), передає їх у `config_editor.py` і перевіряє, що результат — коректний YAML, перш ніж зберегти. |
+| **`aggregator/geocoding.py`** | Перетворює назву міста/району (напр. "Antwerpen", "Merksem") на поштові індекси — через відкритий довідник geo-api.zimmo.be. Використовується і scraper'ом Zimmo, і AI-чатом. |
+| **`server/app.py`** | Окремий маленький сервер (Flask) для панелі **🤖 AI-пошук** на дошці. Приймає повідомлення, просить AI (OpenRouter) розібрати його на критерії, і одразу шукає живо по Immoweb і Zimmo тим самим кодом, що й основна програма. Захищений кодом доступу — див. `SETUP-SERVER.md`. |
 | **`aggregator/runner.py`** | Головний цикл: для кожного сайту → зібрати оголошення → відфільтрувати → записати нові в базу → сповістити про нові. `run_forever()` повторює це за розкладом. |
 | **`tests/`** | Перевіряють, що фільтрація і дедуплікація працюють правильно. Запуск: `python -m unittest`. |
 

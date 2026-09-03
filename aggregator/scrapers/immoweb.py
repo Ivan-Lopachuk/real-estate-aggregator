@@ -145,6 +145,9 @@ class ImmowebScraper(BaseScraper):
             street=location.get("street") or None,
             house_number=str(location["number"]) if location.get("number") is not None else None,
             photo_url=self._dig(item, "media", "pictures", 0, "mediumUrl"),
+            # Immoweb не дає дату створення в результатах пошуку — беремо
+            # дату останнього оновлення як найкращий доступний орієнтир.
+            listed_at=self._dig(item, "publication", "lastModificationDate"),
             raw=item,
         )
 

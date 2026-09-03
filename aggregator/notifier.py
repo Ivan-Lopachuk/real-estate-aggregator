@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 def _format_listing(l: Listing) -> str:
     price = f"{l.price:,.0f} {l.currency}" if l.price is not None else "ціна не вказана"
     if l.extra_costs:
-        price += f" (+ {l.extra_costs:,.0f} {l.currency} комунальні)"
+        price += f" (+ {l.extra_costs:,.0f} {l.currency})"
     lines = [f"• {l.title} — {price}"]
 
     details = []
