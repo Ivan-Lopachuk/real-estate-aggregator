@@ -64,7 +64,60 @@
     padding: 2px 7px; border-radius: 5px; font-size: 12.5px; font-weight: 600;
   }
 
-  .wrap { max-width: 780px; margin: 0 auto; padding: 16px 16px 60px; }
+  .page {
+    display: flex; align-items: flex-start; gap: 20px;
+    max-width: 1120px; margin: 0 auto; padding: 16px 16px 60px;
+  }
+  .wrap { flex: 1 1 480px; min-width: 0; max-width: 780px; padding: 0; }
+
+  .chat-panel {
+    flex: 0 0 320px; display: flex; flex-direction: column;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: var(--shadow); overflow: hidden;
+    position: sticky; top: 16px; height: calc(100vh - 32px); max-height: 720px;
+  }
+  .chat-panel h2 {
+    margin: 0; padding: 12px 14px; font-size: 14px; font-weight: 700;
+    border-bottom: 1px solid var(--border); flex: none;
+  }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .chat-msg {
+    font-size: 13px; line-height: 1.5; padding: 8px 11px; border-radius: 12px;
+    max-width: 92%; white-space: pre-wrap;
+  }
+  .chat-msg-user {
+    align-self: flex-end; background: var(--accent); color: #fff;
+    border-bottom-right-radius: 3px;
+  }
+  .chat-msg-assistant {
+    align-self: flex-start; background: var(--bg); color: var(--text);
+    border-bottom-left-radius: 3px;
+  }
+  .chat-msg-pending { opacity: .6; }
+  .chat-results { display: flex; flex-direction: column; gap: 8px; }
+  .chat-results .card { margin-bottom: 0; }
+  .chat-form {
+    display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--border); flex: none;
+  }
+  .chat-form input {
+    flex: 1; min-width: 0; font: inherit; font-size: 13px;
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 7px 12px; background: var(--bg); color: var(--text);
+  }
+  .chat-form button {
+    flex: none; background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  @media (max-width: 860px) {
+    .page { flex-direction: column; }
+    .chat-panel {
+      flex: none; width: 100%; height: 380px; max-height: none;
+      position: static; order: -1;
+    }
+    .wrap { max-width: none; }
+  }
 
   .bar { margin: 14px 0 16px; }
   .bar .count { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
@@ -133,20 +186,31 @@
     <div class="sub" id="sub">Завантаження…</div>
   </div>
 </header>
-<div class="wrap">
-  <div class="bar" id="bar" hidden>
-    <span class="count" id="count"></span>
-    <div class="bar-actions">
-      <button id="filterBtn">Тільки непереглянуті</button>
-      <button id="markAllBtn">Позначити всі переглянутими</button>
-      <button id="resetSeenBtn">↺ Скинути переглянуте</button>
-      <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
-    </div>
-  </div>
+<div class="page">
+  <aside class="chat-panel" id="chatPanel">
+    <h2>🤖 AI-пошук</h2>
+    <div class="chat-messages" id="chatMessages"></div>
+    <form class="chat-form" id="chatForm">
+      <input type="text" id="chatInput" placeholder="напр. квартира в Антверпені до 700€" autocomplete="off">
+      <button type="submit">➤</button>
+    </form>
+  </aside>
 
-  <div id="list"></div>
-  <div class="empty" id="empty" hidden>Немає оголошень для показу.</div>
-  <div class="error" id="error" hidden></div>
+  <div class="wrap">
+    <div class="bar" id="bar" hidden>
+      <span class="count" id="count"></span>
+      <div class="bar-actions">
+        <button id="filterBtn">Тільки непереглянуті</button>
+        <button id="markAllBtn">Позначити всі переглянутими</button>
+        <button id="resetSeenBtn">↺ Скинути переглянуте</button>
+        <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
+      </div>
+    </div>
+
+    <div id="list"></div>
+    <div class="empty" id="empty" hidden>Немає оголошень для показу.</div>
+    <div class="error" id="error" hidden></div>
+  </div>
 </div>
 
 <script>
@@ -208,6 +272,110 @@ function metaLine(l) {
   return bits.join(" · ");
 }
 
+function buildCard(l, onChange) {
+  // onChange — необов'язковий колбек: викликається після зміни позначки
+  // "переглянуто" на цій картці (основний список перемальовує себе,
+  // а картки в чаті просто оновлюють свій вигляд на місці).
+  var seen = isSeen(l.uid);
+  var card = document.createElement("div");
+  card.className = "card" + (seen ? " seen" : "");
+
+  if (l.photo_url) {
+    var thumb = document.createElement("a");
+    thumb.className = "thumb";
+    thumb.href = l.url;
+    thumb.target = "_blank";
+    thumb.rel = "noopener";
+    thumb.addEventListener("click", function () {
+      setSeen(l.uid, true);
+      if (onChange) setTimeout(onChange, 50);
+    });
+    var img = document.createElement("img");
+    img.src = l.photo_url;
+    img.alt = "";
+    img.loading = "lazy";
+    img.addEventListener("error", function () { thumb.remove(); });
+    thumb.appendChild(img);
+    card.appendChild(thumb);
+  }
+
+  var body = document.createElement("div");
+  body.className = "body";
+
+  var top = document.createElement("div");
+  top.className = "top";
+  var title = document.createElement("div");
+  title.className = "title";
+  title.textContent = l.title || "Оголошення";
+  var badge = document.createElement("span");
+  badge.className = "badge";
+  badge.textContent = "нове";
+  title.appendChild(badge);
+  if (l.fiber_available === true) {
+    var fiber = document.createElement("span");
+    fiber.className = "badge fiber";
+    fiber.textContent = "⚡ оптика Proximus";
+    title.appendChild(fiber);
+  }
+  var price = document.createElement("div");
+  price.className = "price";
+  price.textContent = fmtPrice(l.price, l.currency, l.extra_costs);
+  top.appendChild(title);
+  top.appendChild(price);
+
+  var meta = document.createElement("div");
+  meta.className = "meta";
+  meta.textContent = metaLine(l);
+
+  var when = document.createElement("div");
+  when.className = "when";
+  when.textContent = fmtWhen(l.first_seen_utc);
+
+  var alsoOn = null;
+  if (l.also_on && l.also_on.length) {
+    alsoOn = document.createElement("div");
+    alsoOn.className = "also-on";
+    alsoOn.appendChild(document.createTextNode("Також на: "));
+    l.also_on.forEach(function (o, i) {
+      if (i > 0) alsoOn.appendChild(document.createTextNode(", "));
+      var a = document.createElement("a");
+      a.href = o.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = siteLabel(o.url);
+      alsoOn.appendChild(a);
+    });
+  }
+
+  var actions = document.createElement("div");
+  actions.className = "actions";
+  var open = document.createElement("a");
+  open.href = l.url;
+  open.target = "_blank";
+  open.rel = "noopener";
+  open.textContent = "Відкрити на " + siteLabel(l.url);
+  open.addEventListener("click", function () {
+    setSeen(l.uid, true);
+    if (onChange) setTimeout(onChange, 50);
+  });
+  var toggle = document.createElement("button");
+  toggle.textContent = seen ? "Повернути в нові" : "Позначити переглянутим";
+  toggle.addEventListener("click", function () {
+    setSeen(l.uid, !seen);
+    if (onChange) onChange();
+  });
+  actions.appendChild(open);
+  actions.appendChild(toggle);
+
+  body.appendChild(top);
+  if (meta.textContent) body.appendChild(meta);
+  body.appendChild(when);
+  if (alsoOn) body.appendChild(alsoOn);
+  body.appendChild(actions);
+  card.appendChild(body);
+  return card;
+}
+
 function render() {
   var list = document.getElementById("list");
   var empty = document.getElementById("empty");
@@ -231,104 +399,106 @@ function render() {
     : "Немає оголошень для показу.";
 
   items.forEach(function (l) {
-    var seen = isSeen(l.uid);
-    var card = document.createElement("div");
-    card.className = "card" + (seen ? " seen" : "");
+    list.appendChild(buildCard(l, render));
+  });
+}
 
-    if (l.photo_url) {
-      var thumb = document.createElement("a");
-      thumb.className = "thumb";
-      thumb.href = l.url;
-      thumb.target = "_blank";
-      thumb.rel = "noopener";
-      thumb.addEventListener("click", function () {
-        setSeen(l.uid, true);
-        setTimeout(render, 50);
-      });
-      var img = document.createElement("img");
-      img.src = l.photo_url;
-      img.alt = "";
-      img.loading = "lazy";
-      img.addEventListener("error", function () { thumb.remove(); });
-      thumb.appendChild(img);
-      card.appendChild(thumb);
-    }
+// ---------- AI-чат ----------------------------------------------------
 
-    var body = document.createElement("div");
-    body.className = "body";
+// Адреса твого сервера з server/app.py (Render). Заповнюється один раз
+// після деплою — див. SETUP-SERVER.md. Без цього чат просто покаже
+// повідомлення "чат ще не налаштовано".
+var CHAT_BACKEND_URL = "";
 
-    var top = document.createElement("div");
-    top.className = "top";
-    var title = document.createElement("div");
-    title.className = "title";
-    title.textContent = l.title || "Оголошення";
-    var badge = document.createElement("span");
-    badge.className = "badge";
-    badge.textContent = "нове";
-    title.appendChild(badge);
-    if (l.fiber_available === true) {
-      var fiber = document.createElement("span");
-      fiber.className = "badge fiber";
-      fiber.textContent = "⚡ оптика Proximus";
-      title.appendChild(fiber);
-    }
-    var price = document.createElement("div");
-    price.className = "price";
-    price.textContent = fmtPrice(l.price, l.currency, l.extra_costs);
-    top.appendChild(title);
-    top.appendChild(price);
+var CHAT_CODE_KEY = "reab:chat-access-code";
+var chatHistory = [];
 
-    var meta = document.createElement("div");
-    meta.className = "meta";
-    meta.textContent = metaLine(l);
+function getChatAccessCode() {
+  try { return localStorage.getItem(CHAT_CODE_KEY) || ""; } catch (e) { return ""; }
+}
+function setChatAccessCode(code) {
+  try { localStorage.setItem(CHAT_CODE_KEY, code); } catch (e) {}
+}
 
-    var when = document.createElement("div");
-    when.className = "when";
-    when.textContent = fmtWhen(l.first_seen_utc);
+function appendChatText(role, text) {
+  var messages = document.getElementById("chatMessages");
+  var el = document.createElement("div");
+  el.className = "chat-msg chat-msg-" + role;
+  el.textContent = text;
+  messages.appendChild(el);
+  messages.scrollTop = messages.scrollHeight;
+  return el;
+}
 
-    var alsoOn = null;
-    if (l.also_on && l.also_on.length) {
-      alsoOn = document.createElement("div");
-      alsoOn.className = "also-on";
-      alsoOn.appendChild(document.createTextNode("Також на: "));
-      l.also_on.forEach(function (o, i) {
-        if (i > 0) alsoOn.appendChild(document.createTextNode(", "));
-        var a = document.createElement("a");
-        a.href = o.url;
-        a.target = "_blank";
-        a.rel = "noopener";
-        a.textContent = siteLabel(o.url);
-        alsoOn.appendChild(a);
-      });
-    }
+function appendChatResults(listings) {
+  if (!listings || !listings.length) return;
+  var messages = document.getElementById("chatMessages");
+  var wrap = document.createElement("div");
+  wrap.className = "chat-results";
+  listings.forEach(function (l) {
+    wrap.appendChild(buildCard(l, function () {}));
+  });
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+}
 
-    var actions = document.createElement("div");
-    actions.className = "actions";
-    var open = document.createElement("a");
-    open.href = l.url;
-    open.target = "_blank";
-    open.rel = "noopener";
-    open.textContent = "Відкрити на " + siteLabel(l.url);
-    open.addEventListener("click", function () {
-      setSeen(l.uid, true);
-      setTimeout(render, 50);
+function sendChatMessage(text) {
+  if (!CHAT_BACKEND_URL) {
+    appendChatText("assistant", "Чат ще не налаштовано — див. SETUP-SERVER.md (треба вписати адресу сервера у CHAT_BACKEND_URL).");
+    return;
+  }
+
+  var code = getChatAccessCode();
+  if (!code) {
+    code = (prompt("Введи код доступу до AI-пошуку:") || "").trim();
+    if (!code) return;
+    setChatAccessCode(code);
+  }
+
+  appendChatText("user", text);
+  var pending = appendChatText("assistant", "…");
+  pending.classList.add("chat-msg-pending");
+
+  fetch(CHAT_BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Access-Code": code },
+    body: JSON.stringify({ message: text, history: chatHistory }),
+  })
+    .then(function (r) {
+      if (r.status === 401) {
+        setChatAccessCode("");
+        throw new Error("Неправильний код доступу. Спробуй ще раз — запитаємо його знову.");
+      }
+      if (!r.ok) throw new Error("Сервер відповів помилкою (" + r.status + ").");
+      return r.json();
+    })
+    .then(function (data) {
+      pending.remove();
+      var reply = data.reply || "…";
+      appendChatText("assistant", reply);
+      chatHistory.push({ role: "user", content: text });
+      chatHistory.push({ role: "assistant", content: reply });
+      appendChatResults(data.listings);
+    })
+    .catch(function (e) {
+      pending.remove();
+      appendChatText(
+        "assistant",
+        "Не вдалося зв'язатись із сервером: " + e.message +
+          " Якщо сервер довго не використовувався, спробуй ще раз за хвилину — він міг щойно 'прокидатись'."
+      );
     });
-    var toggle = document.createElement("button");
-    toggle.textContent = seen ? "Повернути в нові" : "Позначити переглянутим";
-    toggle.addEventListener("click", function () {
-      setSeen(l.uid, !seen);
-      render();
-    });
-    actions.appendChild(open);
-    actions.appendChild(toggle);
+}
 
-    body.appendChild(top);
-    if (meta.textContent) body.appendChild(meta);
-    body.appendChild(when);
-    if (alsoOn) body.appendChild(alsoOn);
-    body.appendChild(actions);
-    card.appendChild(body);
-    list.appendChild(card);
+function initChat() {
+  var form = document.getElementById("chatForm");
+  var input = document.getElementById("chatInput");
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    sendChatMessage(text);
   });
 }
 
@@ -382,6 +552,8 @@ function init(data) {
 
   render();
 }
+
+initChat();
 
 fetch("data.json?" + Date.now())
   .then(function (r) {
