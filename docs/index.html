@@ -58,15 +58,11 @@
     padding: 32px 16px 28px;
     position: relative; overflow: hidden;
   }
-  .hero-inner { max-width: 780px; margin: 0 auto; text-align: center; position: relative; }
-
-  /* Обидві кнопки разом в одному кутку (звичний вигляд шапки сайту) —
-     без розкидання по кутах з порожнечею між ними. */
-  .hero-actions { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
+  .hero-inner { max-width: 1040px; margin: 0 auto; text-align: center; position: relative; }
 
   .hero-btn {
     font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 999px;
-    cursor: pointer; border: none;
+    cursor: pointer; border: none; white-space: nowrap;
     transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease;
   }
   .hero-btn:hover { transform: translateY(-1px); }
@@ -80,16 +76,18 @@
   }
   .hero-btn-outline:hover { background: rgba(255,255,255,.22); border-color: #fff; }
 
+  /* Один рядок: зліва — кнопка "Розсилка" над карткою-описом (стовпчик),
+     посередині — пошук, справа — кнопка "Вхід" на висоті пошуку. */
   .hero-content {
-    display: flex; gap: 18px; align-items: stretch; text-align: left; margin-top: 6px;
+    display: flex; gap: 20px; align-items: center; text-align: left; margin-top: 14px;
   }
+  .hero-left { flex: 0 0 230px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
   .feature-card {
-    flex: 0 0 230px;
+    width: 100%;
     background: linear-gradient(160deg, rgba(255,255,255,.22), rgba(255,255,255,.07));
     border: 1px solid rgba(255,255,255,.30);
     border-radius: 14px; padding: 16px 17px;
     box-shadow: 0 4px 14px rgba(0,0,0,.10);
-    display: flex; flex-direction: column; justify-content: center;
   }
   .feature-card-icon {
     display: inline-flex; align-items: center; justify-content: center;
@@ -98,12 +96,12 @@
   }
   .feature-card-title { color: #fff; font-weight: 700; font-size: 13px; margin-bottom: 6px; }
   .feature-card-text { color: rgba(255,255,255,.88); font-size: 11.5px; line-height: 1.6; }
-  .search-cell { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .search-cell { flex: 1; min-width: 0; }
   .search-cell .chat-bar { max-width: none; margin: 0 0 8px; }
   .search-cell .chat-reply { max-width: none; margin: 0; text-align: left; }
-  @media (max-width: 640px) {
-    .hero-content { flex-direction: column; }
-    .feature-card { flex: none; }
+  @media (max-width: 760px) {
+    .hero-content { flex-direction: column; align-items: stretch; }
+    .hero-left { flex: none; width: 100%; }
   }
 
   .sub-panel {
@@ -266,19 +264,18 @@
 <body>
 <header class="hero">
   <div class="hero-inner">
-    <div class="hero-actions">
-      <button type="button" id="subToggleBtn" class="hero-btn hero-btn-solid">✉ Розсилка</button>
-      <button type="button" id="authBtn" class="hero-btn hero-btn-outline">Вхід</button>
-    </div>
     <h1>Дошка оголошень нерухомості</h1>
     <div class="hero-content">
-      <div class="feature-card">
-        <div class="feature-card-icon">✉</div>
-        <div class="feature-card-title">Що робить "Розсилка"</div>
-        <div class="feature-card-text">
-          Увійди через Google, вкажи місто й критерії пошуку — і листи з
-          новими оголошеннями приходитимуть на твою пошту автоматично, з
-          обраним інтервалом (щогодини, раз на добу тощо).
+      <div class="hero-left">
+        <button type="button" id="subToggleBtn" class="hero-btn hero-btn-solid">✉ Розсилка</button>
+        <div class="feature-card">
+          <div class="feature-card-icon">✉</div>
+          <div class="feature-card-title">Що робить "Розсилка"</div>
+          <div class="feature-card-text">
+            Увійди через Google, вкажи місто й критерії пошуку — і листи з
+            новими оголошеннями приходитимуть на твою пошту автоматично, з
+            обраним інтервалом (щогодини, раз на добу тощо).
+          </div>
         </div>
       </div>
       <div class="search-cell">
@@ -288,6 +285,7 @@
         </form>
         <div class="chat-reply" id="chatReply" hidden></div>
       </div>
+      <button type="button" id="authBtn" class="hero-btn hero-btn-outline">Вхід</button>
     </div>
   </div>
 </header>
