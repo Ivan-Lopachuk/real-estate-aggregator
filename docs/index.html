@@ -175,10 +175,14 @@ function setSeen(uid, seen) {
   saveOpened(map);
 }
 
-function fmtPrice(p, cur) {
+function fmtPrice(p, cur, extraCosts) {
   if (p == null) return "ціна не вказана";
-  var s = Math.round(p).toLocaleString("uk-UA").replace(/,/g, " ");
-  return s + " " + (cur === "EUR" ? "€" : (cur || ""));
+  var unit = cur === "EUR" ? "€" : (cur || "");
+  var s = Math.round(p).toLocaleString("uk-UA").replace(/,/g, " ") + " " + unit;
+  if (extraCosts) {
+    s += " (+" + Math.round(extraCosts).toLocaleString("uk-UA").replace(/,/g, " ") + " " + unit + ")";
+  }
+  return s;
 }
 function fmtWhen(iso) {
   var d = new Date(iso);
@@ -270,7 +274,7 @@ function render() {
     }
     var price = document.createElement("div");
     price.className = "price";
-    price.textContent = fmtPrice(l.price, l.currency);
+    price.textContent = fmtPrice(l.price, l.currency, l.extra_costs);
     top.appendChild(title);
     top.appendChild(price);
 
