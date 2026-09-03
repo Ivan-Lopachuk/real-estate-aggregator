@@ -153,10 +153,6 @@
   .empty-state .icon { font-size: 34px; line-height: 1; margin-bottom: 10px; }
   .empty-state .title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
   .empty-state .text { font-size: 13.5px; color: var(--muted); max-width: 420px; margin: 0 auto; }
-  .empty-state .stat {
-    display: inline-block; margin-top: 14px; font-size: 12.5px; color: var(--muted);
-    background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 5px 13px;
-  }
   .suggestions {
     display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px;
   }
@@ -421,15 +417,11 @@ function render() {
     empty.appendChild(buildEmptyState("🔍", "Нічого не знайдено", "Спробуй змінити критерії запиту — інше місто, вищу ціну або менше кімнат.", []));
   } else {
     empty.innerHTML = "";
-    var statText = DATA && DATA.listings
-      ? "Зараз відстежується " + DATA.listings.length + " оголошень за твоїми критеріями"
-      : "";
     empty.appendChild(buildEmptyState(
       "🏠",
       "Почни з пошуку",
-      "Напиши запит у рядок пошуку вгорі — можна будь-яке місто чи район, навіть те, якого ще не було в критеріях. Або просто зачекай: лист із новими пропозиціями сам приведе сюди потрібні результати.",
-      SUGGESTIONS,
-      statText
+      "Напиши запит у рядок пошуку вгорі — можна будь-яке місто чи район у Бельгії. AI перевірить Immoweb і Zimmo та за кілька секунд покаже результати прямо тут.",
+      SUGGESTIONS
     ));
     empty.appendChild(buildStepsRow());
   }
@@ -446,7 +438,7 @@ var SUGGESTIONS = [
   "від 60 м² у Кортрейку до 900€"
 ];
 
-function buildEmptyState(icon, title, text, suggestions, statText) {
+function buildEmptyState(icon, title, text, suggestions) {
   var box = document.createElement("div");
   box.className = "empty-state";
 
@@ -464,13 +456,6 @@ function buildEmptyState(icon, title, text, suggestions, statText) {
   textEl.className = "text";
   textEl.textContent = text;
   box.appendChild(textEl);
-
-  if (statText) {
-    var statEl = document.createElement("div");
-    statEl.className = "stat";
-    statEl.textContent = statText;
-    box.appendChild(statEl);
-  }
 
   if (suggestions && suggestions.length) {
     var chips = document.createElement("div");
@@ -496,7 +481,7 @@ function buildStepsRow() {
   var steps = [
     "Пишеш у пошук, що шукаєш — місто, ціну, кількість спалень",
     "AI перевіряє Immoweb і Zimmo та одразу показує знайдене",
-    "Раз на кілька годин лист сам приносить нові пропозиції"
+    "Результати з'являються тут же — фото, ціна, посилання"
   ];
   var row = document.createElement("div");
   row.className = "steps";
