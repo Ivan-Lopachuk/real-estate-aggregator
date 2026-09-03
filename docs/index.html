@@ -59,6 +59,20 @@
     position: relative; overflow: hidden;
   }
   .hero-inner { max-width: 780px; margin: 0 auto; text-align: center; position: relative; }
+
+  .auth-bar { display: flex; justify-content: flex-end; align-items: center; min-height: 34px; margin-bottom: 6px; }
+  .auth-user {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 6px 4px 4px;
+  }
+  .auth-user img { width: 24px; height: 24px; border-radius: 50%; display: block; background: rgba(255,255,255,.4); }
+  .auth-user .name { font-size: 12.5px; color: #fff; font-weight: 600; }
+  .auth-user button {
+    background: rgba(255,255,255,.22); border: none; color: #fff;
+    font-size: 11.5px; padding: 4px 11px;
+  }
+  .auth-user button:hover { background: rgba(255,255,255,.34); color: #fff; border-color: transparent; }
+
   .hero h1 {
     color: var(--hero-fg); font-size: 27px; font-weight: 800;
     letter-spacing: -.02em; line-height: 1.25; margin: 0 0 8px;
@@ -186,6 +200,14 @@
 <body>
 <header class="hero">
   <div class="hero-inner">
+    <div class="auth-bar">
+      <div id="gSignInBtn"></div>
+      <div class="auth-user" id="authUser" hidden>
+        <img id="authPic" alt="" referrerpolicy="no-referrer">
+        <span class="name" id="authName"></span>
+        <button type="button" id="authLogout">Вийти</button>
+      </div>
+    </div>
     <h1>Дошка оголошень нерухомості</h1>
     <form class="chat-bar" id="chatForm">
       <input type="text" id="chatInput" placeholder="напр. квартира в Антверпені до 700€, за останні 2 дні" autocomplete="off">
@@ -210,6 +232,10 @@
   <div class="error" id="error" hidden></div>
 </div>
 
+<!-- Без async/defer навмисно: має завантажитись і виконатись ДО
+     нашого коду нижче, щоб об'єкт `google` вже існував, коли ми
+     викликаємо google.accounts.id.initialize(...) в initGoogleAuth(). -->
+<script src="https://accounts.google.com/gsi/client"></script>
 <script>
 "use strict";
 
@@ -501,12 +527,91 @@ function buildStepsRow() {
   return row;
 }
 
+// ---------- Вхід через Google -------------------------------------------
+
+// Client ID застосунку в Google Cloud Console — це не секрет, його
+// нормально тримати прямо тут. Заповнюється один раз після реєстрації
+// застосунку (див. SETUP-SERVER.md). Поки порожній — кнопка входу
+// просто не з'явиться, решта сторінки працює як і раніше.
+var GOOGLE_CLIENT_ID = "";
+
+var AUTH_STORE_KEY = "reab:google-user";
+
+function loadAuthUser() {
+  try { return JSON.parse(localStorage.getItem(AUTH_STORE_KEY)); } catch (e) { return null; }
+}
+function saveAuthUser(user) {
+  try {
+    if (user) localStorage.setItem(AUTH_STORE_KEY, JSON.stringify(user));
+    else localStorage.removeItem(AUTH_STORE_KEY);
+  } catch (e) {}
+}
+
+function showAuthUser(user) {
+  var btn = document.getElementById("gSignInBtn");
+  var box = document.getElementById("authUser");
+  if (user) {
+    btn.hidden = true;
+    box.hidden = false;
+    document.getElementById("authPic").src = user.picture || "";
+    document.getElementById("authName").textContent = user.name || user.email;
+  } else {
+    box.hidden = true;
+    btn.hidden = !GOOGLE_CLIENT_ID;
+  }
+}
+
+function onGoogleCredential(response) {
+  fetch(AUTH_BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: response.credential }),
+  })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (user) {
+      saveAuthUser(user);
+      showAuthUser(user);
+    })
+    .catch(function () {
+      // Не вдалось підтвердити вхід на сервері — просто лишаємось
+      // не залогіненими, нічого критичного для решти сторінки.
+    });
+}
+
+function initGoogleAuth() {
+  showAuthUser(loadAuthUser());
+
+  document.getElementById("authLogout").addEventListener("click", function () {
+    saveAuthUser(null);
+    showAuthUser(null);
+    if (typeof google !== "undefined") google.accounts.id.disableAutoSelect();
+  });
+
+  if (!GOOGLE_CLIENT_ID || typeof google === "undefined") return;
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: onGoogleCredential,
+    auto_select: false,
+  });
+  google.accounts.id.renderButton(
+    document.getElementById("gSignInBtn"),
+    { theme: "outline", size: "medium", text: "signin", shape: "pill" }
+  );
+}
+
 // ---------- AI-чат ----------------------------------------------------
 
 // Адреса твого сервера з server/app.py (Render). Заповнюється один раз
 // після деплою — див. SETUP-SERVER.md. Без цього чат просто покаже
 // повідомлення "чат ще не налаштовано".
 var CHAT_BACKEND_URL = "https://real-estate-aggregator-gmes.onrender.com/api/chat";
+
+// Той самий сервер перевіряє вхід через Google — /api/auth/google поруч з /api/chat.
+var AUTH_BACKEND_URL = CHAT_BACKEND_URL.replace("/api/chat", "/api/auth/google");
 
 var CHAT_CODE_KEY = "reab:chat-access-code";
 var chatHistory = [];
@@ -612,6 +717,7 @@ function init(data) {
 }
 
 initChat();
+initGoogleAuth();
 
 fetch("data.json?" + Date.now())
   .then(function (r) {
