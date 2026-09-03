@@ -23,6 +23,7 @@ class Listing:
 
     # --- необов'язкові поля (None, якщо сайт їх не дав) ---
     price: Optional[float] = None
+    extra_costs: Optional[float] = None     # комунальні/додаткові витрати (якщо сайт вказує окремо)
     currency: str = "EUR"
     transaction: Optional[str] = None      # "sale" або "rent"
     property_type: Optional[str] = None    # "house", "apartment", ...

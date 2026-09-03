@@ -123,6 +123,8 @@ class ImmowebScraper(BaseScraper):
             or self._dig(item, "transaction", "sale", "price")
             or self._dig(item, "transaction", "rental", "monthlyRentalPrice")
         )
+        # Комунальні платежі показуються на сайті окремо, напр. "€750 (+ €160)".
+        extra_costs = self._dig(item, "transaction", "rental", "monthlyRentalCosts")
         api_type = str(prop.get("type") or "").upper()
         postal = location.get("postalCode")
 
@@ -132,6 +134,7 @@ class ImmowebScraper(BaseScraper):
             url=self._CLASSIFIED_URL.format(id=raw_id),
             title=self._make_title(prop, location),
             price=float(price) if price is not None else None,
+            extra_costs=float(extra_costs) if extra_costs is not None else None,
             currency="EUR",
             transaction=self.criteria.transaction,
             property_type=_API_TYPE_TO_SIMPLE.get(api_type, api_type.lower() or None),

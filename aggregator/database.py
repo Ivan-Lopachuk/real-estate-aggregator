@@ -65,6 +65,7 @@ _MIGRATIONS: dict[str, str] = {
     "fiber_available": "INTEGER",
     "fiber_technology": "TEXT",
     "photo_url": "TEXT",
+    "extra_costs": "REAL",
 }
 
 # Скільки днів «пам'ятаємо» оголошення для пошуку схожості на іншому сайті.
@@ -144,15 +145,15 @@ class Database:
             self._conn.execute(
                 """
                 INSERT INTO listings (
-                    uid, site, site_listing_id, url, title, price, currency,
+                    uid, site, site_listing_id, url, title, price, extra_costs, currency,
                     transaction_kind, property_type, bedrooms, living_area,
                     locality, postal_code, street, house_number, photo_url,
                     first_seen_utc, notified
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
                 """,
                 (
                     listing.uid, listing.site, listing.site_listing_id, listing.url,
-                    listing.title, listing.price, listing.currency,
+                    listing.title, listing.price, listing.extra_costs, listing.currency,
                     listing.transaction, listing.property_type, listing.bedrooms,
                     listing.living_area, listing.locality, listing.postal_code,
                     listing.street, listing.house_number, listing.photo_url, now,

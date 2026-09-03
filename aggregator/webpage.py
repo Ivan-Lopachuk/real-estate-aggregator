@@ -33,6 +33,7 @@ def _row_to_dict(row) -> dict:
         "url": row["url"],
         "title": row["title"],
         "price": row["price"],
+        "extra_costs": row["extra_costs"],
         "currency": row["currency"],
         "transaction": row["transaction_kind"],
         "property_type": row["property_type"],
