@@ -31,6 +31,7 @@ import logging
 import os
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
@@ -44,7 +45,7 @@ from flask_cors import CORS
 # шлях пошуку модулів, щоб його можна було імпортувати.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from aggregator import geocoding  # noqa: E402
+from aggregator import geocoding, proximus  # noqa: E402
 from aggregator.config import HttpSettings, SearchCriteria  # noqa: E402
 from aggregator.filters import ListingFilter  # noqa: E402
 from aggregator.models import Listing  # noqa: E402
@@ -65,6 +66,11 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 _CHAT_MAX_PAGES = 3
 _CHAT_REQUEST_TIMEOUT = 15
 _CHAT_REQUEST_DELAY = 0.5
+
+# Скільки різних адрес перевіряти на оптику Proximus ОДНОЧАСНО (у
+# кілька потоків) — без цього перевірка 50 адрес по черзі (по 2
+# мережеві виклики на кожну) займала б надто довго.
+_CHAT_FIBER_WORKERS = 8
 
 app = Flask(__name__)
 CORS(app)
@@ -145,7 +151,7 @@ def _extract_json(text: str) -> Optional[dict]:
         return None
 
 
-def _build_criteria(parsed: dict, postal_codes: list[str]) -> SearchCriteria:
+def _build_criteria(parsed: dict, postal_codes: list[str], place: Optional[str] = None) -> SearchCriteria:
     property_types = parsed.get("property_types") or ["house", "apartment"]
     return SearchCriteria(
         transaction="sale" if parsed.get("transaction") == "sale" else "rent",
@@ -156,6 +162,7 @@ def _build_criteria(parsed: dict, postal_codes: list[str]) -> SearchCriteria:
         bedrooms_max=parsed.get("bedrooms_max"),
         living_area_min=parsed.get("living_area_min"),
         postal_codes=postal_codes,
+        localities=[str(place)] if place else [],
     )
 
 
@@ -209,7 +216,43 @@ def _apply_recency(listings: list[Listing], days_back) -> list[Listing]:
     return kept
 
 
-def _listing_to_dict(l: Listing) -> dict:
+def _fiber_status_for(listings: list[Listing]) -> dict[str, tuple[bool, Optional[str]]]:
+    """
+    Перевіряє оптику Proximus для УСІХ оголошень із відомою адресою
+    (навіть якщо їх 50) — щоб чат не чекав хвилинами, різні адреси
+    перевіряються одночасно в кілька потоків. Кілька квартир в одному
+    будинку перевіряються лише раз (кеш за адресою, не за uid).
+    """
+    # адреса -> список uid оголошень з цією адресою
+    addresses: dict[tuple, list[str]] = {}
+    address_listing: dict[tuple, Listing] = {}
+    for l in listings:
+        if not (l.street and l.house_number and l.postal_code):
+            continue
+        key = (l.street.strip().lower(), l.house_number.strip().lower(), l.postal_code.strip())
+        addresses.setdefault(key, []).append(l.uid)
+        address_listing.setdefault(key, l)
+
+    if not addresses:
+        return {}
+
+    def _check(key: tuple) -> tuple[tuple, Optional[tuple[bool, Optional[str]]]]:
+        l = address_listing[key]
+        result = proximus.check_fiber(l.street, l.house_number, l.postal_code, l.locality)
+        return key, (None if result is None else (result.available, result.technology))
+
+    by_uid: dict[str, tuple[bool, Optional[str]]] = {}
+    with ThreadPoolExecutor(max_workers=_CHAT_FIBER_WORKERS) as pool:
+        for key, value in pool.map(_check, addresses.keys()):
+            if value is None:
+                continue
+            for uid in addresses[key]:
+                by_uid[uid] = value
+
+    return by_uid
+
+
+def _listing_to_dict(l: Listing, fiber: Optional[tuple[bool, Optional[str]]] = None) -> dict:
     return {
         "uid": l.uid,
         "site": l.site,
@@ -227,6 +270,7 @@ def _listing_to_dict(l: Listing) -> dict:
         "photo_url": l.photo_url,
         # Дошка вже вміє малювати "побачено N дн. тому" з цього поля.
         "first_seen_utc": l.listed_at,
+        "fiber_available": fiber[0] if fiber is not None else None,
     }
 
 
@@ -259,14 +303,21 @@ def chat():
                 "listings": [],
             })
 
-    criteria = _build_criteria(parsed, postal_codes)
+    criteria = _build_criteria(parsed, postal_codes, place)
     listings = _search_live(criteria)
     listings = _apply_recency(listings, parsed.get("days_back"))
+    fiber_map = _fiber_status_for(listings)
+
+    criteria_summary = criteria.summary
+    days_back = parsed.get("days_back")
+    if days_back:
+        criteria_summary += f" · за останні {days_back} дн."
 
     reply = parsed.get("reply") or f"Знайшов {len(listings)} оголошень."
     return jsonify({
         "reply": reply,
-        "listings": [_listing_to_dict(l) for l in listings],
+        "criteria_summary": criteria_summary,
+        "listings": [_listing_to_dict(l, fiber_map.get(l.uid)) for l in listings],
     })
 
 
