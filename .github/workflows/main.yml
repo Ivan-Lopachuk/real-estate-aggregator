@@ -1,0 +1,122 @@
+name: Перевірка нових оголошень
+
+# --- Коли запускати ---
+on:
+  schedule:
+    # Кожні 6 годин. Час у форматі UTC; для Києва +2/+3 години.
+    - cron: "0 */6 * * *"
+  # Кнопка "Run workflow" на вкладці Actions — запуск вручну. Поля нижче
+  # необов'язкові: залиште порожнім (або "(без змін)"), щоб не чіпати
+  # поточне значення; напишіть "null", щоб прибрати обмеження.
+  workflow_dispatch:
+    inputs:
+      transaction:
+        description: "Оренда чи купівля?"
+        type: choice
+        options: ["(без змін)", "rent", "sale"]
+        default: "(без змін)"
+      property_types:
+        description: "Тип житла"
+        type: choice
+        options: ["(без змін)", "house", "apartment", "house та apartment"]
+        default: "(без змін)"
+      price_min:
+        description: "Мінімальна ціна, €. Порожньо = не чіпати, null = без обмеження"
+        type: string
+      price_max:
+        description: "Максимальна ціна, €. Порожньо = не чіпати, null = без обмеження"
+        type: string
+      bedrooms_min:
+        description: "Мін. кількість спалень. Порожньо = не чіпати, null = без обмеження"
+        type: string
+      bedrooms_max:
+        description: "Макс. кількість спалень. Порожньо = не чіпати, null = без обмеження"
+        type: string
+      living_area_min:
+        description: "Мін. житлова площа, м². Порожньо = не чіпати, null = без обмеження"
+        type: string
+      postal_codes:
+        description: "Поштові індекси через кому, напр. 9000, 8500. Порожньо = не чіпати, null = уся країна"
+        type: string
+      localities:
+        description: "Населені пункти через кому. Порожньо = не чіпати, null = не фільтрувати"
+        type: string
+
+# Щоб два запуски не йшли одночасно.
+concurrency:
+  group: check-listings
+  cancel-in-progress: false
+
+# Дозвіл записувати в репозиторій (щоб зберігати базу й дані дошки).
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Завантажити код проєкту
+        uses: actions/checkout@v4
+
+      - name: Встановити Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Встановити бібліотеки (requests, PyYAML)
+        run: pip install -r requirements.txt
+
+      # Спрацьовує лише коли запуск зроблено вручну кнопкою "Run
+      # workflow" із заповненою формою. За звичайного запуску за
+      # розкладом (schedule) поля форми порожні, і цей крок нічого не
+      # чіпає в config.yaml.
+      - name: Застосувати нові критерії пошуку з форми (якщо задані)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          CRITERIA_TRANSACTION: ${{ github.event.inputs.transaction }}
+          CRITERIA_PROPERTY_TYPES: ${{ github.event.inputs.property_types }}
+          CRITERIA_PRICE_MIN: ${{ github.event.inputs.price_min }}
+          CRITERIA_PRICE_MAX: ${{ github.event.inputs.price_max }}
+          CRITERIA_BEDROOMS_MIN: ${{ github.event.inputs.bedrooms_min }}
+          CRITERIA_BEDROOMS_MAX: ${{ github.event.inputs.bedrooms_max }}
+          CRITERIA_LIVING_AREA_MIN: ${{ github.event.inputs.living_area_min }}
+          CRITERIA_POSTAL_CODES: ${{ github.event.inputs.postal_codes }}
+          CRITERIA_LOCALITIES: ${{ github.event.inputs.localities }}
+        run: python scripts/apply_search_criteria.py
+
+      - name: Перевірити сайт і надіслати листи про нові оголошення
+        env:
+          AGGREGATOR_SMTP_USERNAME: ${{ secrets.AGGREGATOR_SMTP_USERNAME }}
+          AGGREGATOR_EMAIL_TO: ${{ secrets.AGGREGATOR_EMAIL_TO }}
+          AGGREGATOR_SMTP_PASSWORD: ${{ secrets.AGGREGATOR_SMTP_PASSWORD }}
+        run: python main.py
+
+      # База вже побачених оголошень (listings.db), список для дошки
+      # (docs/data.json) і, якщо форма вище щось змінила, — config.yaml
+      # зберігаються назад у репозиторій. Так стан і нові критерії
+      # переживають очищення хмарної машини між запусками.
+      - name: Зберегти базу, дошку і (якщо є) нові критерії
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f listings.db docs/data.json config.yaml
+          if git diff --staged --quiet; then
+            echo "Змін немає — коміт не потрібен."
+            exit 0
+          fi
+          if git diff --staged --quiet -- config.yaml; then
+            commit_message="Оновлення бази й дошки оголошень [skip ci]"
+          else
+            commit_message="Оновлено критерії пошуку, базу й дошку оголошень [skip ci]"
+          fi
+          git commit -m "$commit_message"
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "push не вдався (спроба $attempt), синхронізуюсь і пробую ще раз..."
+            git pull --rebase --autostash
+          done
+          echo "Не вдалося запушити зміни після 3 спроб." >&2
+          exit 1
