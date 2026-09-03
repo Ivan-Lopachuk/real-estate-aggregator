@@ -47,17 +47,21 @@
   }
   .hero {
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    padding: 22px 16px;
+    padding: 32px 16px 28px;
   }
-  .hero-inner { max-width: 780px; margin: 0 auto; }
+  .hero-inner { max-width: 780px; margin: 0 auto; text-align: center; }
   .hero h1 {
-    color: var(--hero-fg); font-size: 20px; font-weight: 700;
-    letter-spacing: -.01em; margin: 0 0 5px;
+    color: var(--hero-fg); font-size: 27px; font-weight: 800;
+    letter-spacing: -.02em; line-height: 1.25; margin: 0 0 8px;
+    text-shadow: 0 1px 3px rgba(0,0,0,.18);
   }
-  .hero .sub { color: rgba(255,255,255,.88); font-size: 13px; line-height: 1.5; margin: 0; }
+  .hero .sub {
+    color: rgba(255,255,255,.92); font-size: 13.5px; font-weight: 500;
+    line-height: 1.6; margin: 0;
+  }
   .hero .sub code {
-    background: rgba(255,255,255,.2); color: #fff;
-    padding: 1px 6px; border-radius: 5px; font-size: 12px;
+    background: rgba(255,255,255,.22); color: #fff;
+    padding: 2px 7px; border-radius: 5px; font-size: 12.5px; font-weight: 600;
   }
 
   .wrap { max-width: 780px; margin: 0 auto; padding: 16px 16px 60px; }
@@ -135,6 +139,7 @@
     <span class="count" id="count"></span>
     <button id="filterBtn">Тільки непереглянуті</button>
     <button id="markAllBtn">Позначити всі переглянутими</button>
+    <button id="resetSeenBtn">↺ Скинути переглянуте</button>
     <a id="criteriaLink" class="link-btn" target="_blank" rel="noopener" hidden>⚙ Змінити критерії</a>
   </div>
 
@@ -362,6 +367,11 @@ function init(data) {
       if (!map[l.uid]) map[l.uid] = new Date().toISOString();
     });
     saveOpened(map);
+    render();
+  });
+  document.getElementById("resetSeenBtn").addEventListener("click", function () {
+    if (!confirm("Скинути позначки «переглянуто» для всіх оголошень у цьому браузері?")) return;
+    saveOpened({});
     render();
   });
 
