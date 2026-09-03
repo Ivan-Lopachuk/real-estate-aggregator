@@ -39,15 +39,6 @@
   .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
   .sub code { background: var(--border); padding: 1px 5px; border-radius: 4px; }
 
-  .since-notice {
-    display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center;
-    background: var(--card); border: 1px solid var(--accent);
-    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
-    font-size: 13px;
-  }
-  .since-notice a { color: var(--accent); font-weight: 600; text-decoration: none; }
-  .since-notice a:hover { text-decoration: underline; }
-
   .bar {
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
     margin-bottom: 16px;
@@ -111,7 +102,6 @@
 <div class="wrap">
   <h1>Дошка оголошень нерухомості</h1>
   <div class="sub" id="sub">Завантаження…</div>
-  <div class="since-notice" id="sinceNotice" hidden></div>
 
   <div class="bar" id="bar" hidden>
     <span class="count" id="count"></span>
@@ -130,12 +120,11 @@
 
 var STORE_KEY = "reab:opened";        // { uid: ISO-час коли позначено }
 var DATA = null;
-// Якщо дошку відкрито за посиланням з листа (?since=...), спершу
-// показуємо лише оголошення саме з цього листа, а не всю історію, і
-// одразу вмикаємо фільтр "тільки непереглянуті" — щоб не доводилось
-// клікати вручну щоразу.
+var onlyUnseen = false;
+// Якщо дошку відкрито за посиланням з листа (?since=...), показуємо
+// лише оголошення саме з цього листа (нові за останні ~6 год), а не
+// всю історію. Переглянуті серед них лишаються видимими, просто сіріють.
 var sinceFilter = new URLSearchParams(location.search).get("since");
-var onlyUnseen = !!sinceFilter;
 
 function loadOpened() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
@@ -170,27 +159,6 @@ function siteLabel(url) {
   if (url.indexOf("immoweb.be") !== -1) return "Immoweb";
   return "сайті";
 }
-function updateSinceNotice(base) {
-  var el = document.getElementById("sinceNotice");
-  if (!sinceFilter) { el.hidden = true; return; }
-  el.hidden = false;
-  el.innerHTML = "";
-  var text = document.createElement("span");
-  text.textContent = base.length
-    ? "Показано лише нові оголошення з цього листа (" + base.length + ")."
-    : "Оголошень із цього листа тут більше немає.";
-  var link = document.createElement("a");
-  link.href = location.pathname;
-  link.textContent = "Показати всю дошку →";
-  link.addEventListener("click", function (e) {
-    e.preventDefault();
-    sinceFilter = null;
-    history.replaceState(null, "", location.pathname + location.hash);
-    render();
-  });
-  el.appendChild(text);
-  el.appendChild(link);
-}
 function metaLine(l) {
   var bits = [];
   if (l.bedrooms != null) bits.push(l.bedrooms + " спалень");
@@ -211,8 +179,6 @@ function render() {
     ? DATA.listings.filter(function (l) { return l.first_seen_utc >= sinceFilter; })
     : DATA.listings;
 
-  updateSinceNotice(base);
-
   var items = base.filter(function (l) {
     return onlyUnseen ? !isSeen(l.uid) : true;
   });
@@ -222,11 +188,9 @@ function render() {
     base.filter(function (l) { return !isSeen(l.uid); }).length;
 
   empty.hidden = items.length !== 0;
-  empty.textContent = !sinceFilter
-    ? "Немає оголошень для показу."
-    : !base.length
-      ? "Оголошень із цього листа тут більше немає — можливо, минуло багато часу."
-      : "Усі оголошення з цього листа вже позначені переглянутими.";
+  empty.textContent = sinceFilter
+    ? "Нових оголошень із цього запуску немає."
+    : "Немає оголошень для показу.";
 
   items.forEach(function (l) {
     var seen = isSeen(l.uid);
@@ -350,10 +314,6 @@ function init(data) {
     "Остання перевірка: " + (isNaN(checked) ? "?" : checked.toLocaleString("uk-UA")) +
     " · показано за останні " + (data.recent_days || 90) + " дн.";
   document.getElementById("bar").hidden = false;
-
-  var filterBtn = document.getElementById("filterBtn");
-  filterBtn.classList.toggle("on", onlyUnseen);
-  filterBtn.textContent = onlyUnseen ? "Показано: тільки нові" : "Тільки непереглянуті";
 
   var criteriaUrl = githubActionsUrl();
   if (criteriaUrl) {
