@@ -22,6 +22,21 @@ class SearchCriteriaSummaryTests(unittest.TestCase):
         s = SearchCriteria(transaction="sale")
         self.assertNotIn(",", s.summary)
 
+    def test_price_max_only_shows_do_not_ellipsis(self):
+        s = SearchCriteria(transaction="rent", price_max=1000)
+        self.assertIn("до 1 000 €", s.summary)
+        self.assertNotIn("…", s.summary)
+
+    def test_price_min_only_shows_vid_not_ellipsis(self):
+        s = SearchCriteria(transaction="rent", price_min=600)
+        self.assertIn("від 600 €", s.summary)
+        self.assertNotIn("…", s.summary)
+
+    def test_bedrooms_min_only_shows_vid_not_ellipsis(self):
+        s = SearchCriteria(transaction="rent", bedrooms_min=2)
+        self.assertIn("від 2 спалень", s.summary)
+        self.assertNotIn("…", s.summary)
+
 
 if __name__ == "__main__":
     unittest.main()
