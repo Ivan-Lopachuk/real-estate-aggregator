@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Дошка оголошень нерухомості</title>
+<style>
+  :root {
+    --bg: #f5f5f4;
+    --card: #ffffff;
+    --text: #1c1917;
+    --muted: #78716c;
+    --border: #e7e5e4;
+    --accent: #2563eb;
+    --new: #16a34a;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1917;
+      --card: #292524;
+      --text: #f5f5f4;
+      --muted: #a8a29e;
+      --border: #44403c;
+      --accent: #60a5fa;
+      --new: #4ade80;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 20px 16px 64px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  .sub code { background: var(--border); padding: 1px 5px; border-radius: 4px; }
+
+  .since-notice {
+    display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center;
+    background: var(--card); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .since-notice a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .since-notice a:hover { text-decoration: underline; }
+
+  .bar {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .bar .count { font-weight: 600; margin-right: auto; }
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--border);
+    background: var(--card); color: var(--text);
+    padding: 6px 12px; border-radius: 8px;
+  }
+  button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button:active { transform: translateY(1px); }
+
+  .card {
+    display: flex; align-items: stretch;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 10px;
+    box-shadow: var(--shadow); overflow: hidden;
+    border-left: 3px solid var(--new);
+  }
+  .card.seen { opacity: .55; border-left-color: var(--border); }
+  .card .thumb {
+    flex: 0 0 96px; width: 96px; background: var(--border);
+  }
+  .card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .body { flex: 1; min-width: 0; padding: 14px 16px; }
+  .card .top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .card .title { font-weight: 600; }
+  .card .price { white-space: nowrap; font-weight: 700; }
+  .card .meta { color: var(--muted); font-size: 13px; margin-top: 3px; }
+  .card .when { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  .card .also-on { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .card .also-on a { color: var(--accent); text-decoration: none; }
+  .card .also-on a:hover { text-decoration: underline; }
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 700; color: var(--new);
+    border: 1px solid var(--new); border-radius: 6px; padding: 0 5px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .card.seen .badge { display: none; }
+  .badge.fiber {
+    color: var(--accent); border-color: var(--accent);
+  }
+  .card.seen .badge.fiber { display: inline-block; opacity: .7; }
+  .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .actions a {
+    text-decoration: none; background: var(--accent); color: #fff;
+    padding: 6px 12px; border-radius: 8px; font-weight: 600;
+  }
+  .empty, .error { color: var(--muted); padding: 40px 0; text-align: center; }
+  .error { color: #dc2626; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Дошка оголошень нерухомості</h1>
+  <div class="sub" id="sub">Завантаження…</div>
+  <div class="since-notice" id="sinceNotice" hidden></div>
+
+  <div class="bar" id="bar" hidden>
+    <span class="count" id="count"></span>
+    <button id="filterBtn">Тільки непереглянуті</button>
+    <button id="markAllBtn">Позначити всі переглянутими</button>
+  </div>
+
+  <div id="list"></div>
+  <div class="empty" id="empty" hidden>Немає оголошень для показу.</div>
+  <div class="error" id="error" hidden></div>
+</div>
+
+<script>
+"use strict";
+
+var STORE_KEY = "reab:opened";        // { uid: ISO-час коли позначено }
+var onlyUnseen = false;
+var DATA = null;
+// Якщо дошку відкрито за посиланням з листа (?since=...), спершу
+// показуємо лише оголошення саме з цього листа, а не всю історію.
+var sinceFilter = new URLSearchParams(location.search).get("since");
+
+function loadOpened() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveOpened(map) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(map)); } catch (e) {}
+}
+function isSeen(uid) { return Object.prototype.hasOwnProperty.call(loadOpened(), uid); }
+function setSeen(uid, seen) {
+  var map = loadOpened();
+  if (seen) map[uid] = new Date().toISOString();
+  else delete map[uid];
+  saveOpened(map);
+}
+
+function fmtPrice(p, cur) {
+  if (p == null) return "ціна не вказана";
+  var s = Math.round(p).toLocaleString("uk-UA").replace(/,/g, " ");
+  return s + " " + (cur === "EUR" ? "€" : (cur || ""));
+}
+function fmtWhen(iso) {
+  var d = new Date(iso);
+  if (isNaN(d)) return "";
+  var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (days <= 0) return "побачено сьогодні";
+  if (days === 1) return "побачено вчора";
+  return "побачено " + days + " дн. тому";
+}
+function siteLabel(url) {
+  if (url.indexOf("zimmo.be") !== -1) return "Zimmo";
+  if (url.indexOf("immoweb.be") !== -1) return "Immoweb";
+  return "сайті";
+}
+function updateSinceNotice(base) {
+  var el = document.getElementById("sinceNotice");
+  if (!sinceFilter) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = "";
+  var text = document.createElement("span");
+  text.textContent = base.length
+    ? "Показано лише нові оголошення з цього листа (" + base.length + ")."
+    : "Оголошень із цього листа тут більше немає.";
+  var link = document.createElement("a");
+  link.href = location.pathname;
+  link.textContent = "Показати всю дошку →";
+  link.addEventListener("click", function (e) {
+    e.preventDefault();
+    sinceFilter = null;
+    history.replaceState(null, "", location.pathname + location.hash);
+    render();
+  });
+  el.appendChild(text);
+  el.appendChild(link);
+}
+function metaLine(l) {
+  var bits = [];
+  if (l.bedrooms != null) bits.push(l.bedrooms + " спалень");
+  if (l.living_area) bits.push(Math.round(l.living_area) + " м²");
+  var addr = [l.street, l.house_number].filter(Boolean).join(" ");
+  var place = [l.postal_code, l.locality].filter(Boolean).join(" ");
+  var full = [addr, place].filter(Boolean).join(", ");
+  if (full) bits.push(full);
+  return bits.join(" · ");
+}
+
+function render() {
+  var list = document.getElementById("list");
+  var empty = document.getElementById("empty");
+  list.innerHTML = "";
+
+  var base = sinceFilter
+    ? DATA.listings.filter(function (l) { return l.first_seen_utc >= sinceFilter; })
+    : DATA.listings;
+
+  updateSinceNotice(base);
+
+  var items = base.filter(function (l) {
+    return onlyUnseen ? !isSeen(l.uid) : true;
+  });
+
+  document.getElementById("count").textContent =
+    base.length + " оголошень, непереглянутих: " +
+    base.filter(function (l) { return !isSeen(l.uid); }).length;
+
+  empty.hidden = items.length !== 0;
+  empty.textContent = sinceFilter && !base.length
+    ? "Оголошень із цього листа тут більше немає — можливо, минуло багато часу."
+    : "Немає оголошень для показу.";
+
+  items.forEach(function (l) {
+    var seen = isSeen(l.uid);
+    var card = document.createElement("div");
+    card.className = "card" + (seen ? " seen" : "");
+
+    if (l.photo_url) {
+      var thumb = document.createElement("a");
+      thumb.className = "thumb";
+      thumb.href = l.url;
+      thumb.target = "_blank";
+      thumb.rel = "noopener";
+      thumb.addEventListener("click", function () {
+        setSeen(l.uid, true);
+        setTimeout(render, 50);
+      });
+      var img = document.createElement("img");
+      img.src = l.photo_url;
+      img.alt = "";
+      img.loading = "lazy";
+      img.addEventListener("error", function () { thumb.remove(); });
+      thumb.appendChild(img);
+      card.appendChild(thumb);
+    }
+
+    var body = document.createElement("div");
+    body.className = "body";
+
+    var top = document.createElement("div");
+    top.className = "top";
+    var title = document.createElement("div");
+    title.className = "title";
+    title.textContent = l.title || "Оголошення";
+    var badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = "нове";
+    title.appendChild(badge);
+    if (l.fiber_available === true) {
+      var fiber = document.createElement("span");
+      fiber.className = "badge fiber";
+      fiber.textContent = "⚡ оптика Proximus";
+      title.appendChild(fiber);
+    }
+    var price = document.createElement("div");
+    price.className = "price";
+    price.textContent = fmtPrice(l.price, l.currency);
+    top.appendChild(title);
+    top.appendChild(price);
+
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = metaLine(l);
+
+    var when = document.createElement("div");
+    when.className = "when";
+    when.textContent = fmtWhen(l.first_seen_utc);
+
+    var alsoOn = null;
+    if (l.also_on && l.also_on.length) {
+      alsoOn = document.createElement("div");
+      alsoOn.className = "also-on";
+      alsoOn.appendChild(document.createTextNode("Також на: "));
+      l.also_on.forEach(function (o, i) {
+        if (i > 0) alsoOn.appendChild(document.createTextNode(", "));
+        var a = document.createElement("a");
+        a.href = o.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = siteLabel(o.url);
+        alsoOn.appendChild(a);
+      });
+    }
+
+    var actions = document.createElement("div");
+    actions.className = "actions";
+    var open = document.createElement("a");
+    open.href = l.url;
+    open.target = "_blank";
+    open.rel = "noopener";
+    open.textContent = "Відкрити на " + siteLabel(l.url);
+    open.addEventListener("click", function () {
+      setSeen(l.uid, true);
+      setTimeout(render, 50);
+    });
+    var toggle = document.createElement("button");
+    toggle.textContent = seen ? "Повернути в нові" : "Позначити переглянутим";
+    toggle.addEventListener("click", function () {
+      setSeen(l.uid, !seen);
+      render();
+    });
+    actions.appendChild(open);
+    actions.appendChild(toggle);
+
+    body.appendChild(top);
+    if (meta.textContent) body.appendChild(meta);
+    body.appendChild(when);
+    if (alsoOn) body.appendChild(alsoOn);
+    body.appendChild(actions);
+    card.appendChild(body);
+    list.appendChild(card);
+  });
+}
+
+function init(data) {
+  DATA = data;
+  var checked = new Date(data.generated_utc);
+  document.getElementById("sub").innerHTML =
+    "Критерії: <code>" + (data.search_summary || "—") + "</code><br>" +
+    "Остання перевірка: " + (isNaN(checked) ? "?" : checked.toLocaleString("uk-UA")) +
+    " · показано за останні " + (data.recent_days || 90) + " дн.";
+  document.getElementById("bar").hidden = false;
+
+  document.getElementById("filterBtn").addEventListener("click", function () {
+    onlyUnseen = !onlyUnseen;
+    this.classList.toggle("on", onlyUnseen);
+    this.textContent = onlyUnseen ? "Показано: тільки нові" : "Тільки непереглянуті";
+    render();
+  });
+  document.getElementById("markAllBtn").addEventListener("click", function () {
+    if (!confirm("Позначити всі оголошення як переглянуті?")) return;
+    var map = loadOpened();
+    DATA.listings.forEach(function (l) {
+      if (!map[l.uid]) map[l.uid] = new Date().toISOString();
+    });
+    saveOpened(map);
+    render();
+  });
+
+  render();
+}
+
+fetch("data.json?" + Date.now())
+  .then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
+  .then(init)
+  .catch(function (e) {
+    document.getElementById("sub").textContent = "";
+    var err = document.getElementById("error");
+    err.hidden = false;
+    err.textContent = "Не вдалося завантажити список (data.json): " + e.message +
+      ". Якщо сторінку щойно ввімкнено — зачекайте перший запуск програми.";
+  });
+</script>
+</body>
+</html>

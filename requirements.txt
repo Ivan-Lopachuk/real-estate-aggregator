@@ -1,0 +1,8 @@
+# Зовнішні бібліотеки, потрібні для роботи програми.
+# Встановлення:  pip install -r requirements.txt
+
+requests>=2.31    # HTTP-запити до JSON API сайтів
+PyYAML>=6.0       # читання config.yaml
+
+# Усе інше (sqlite3, smtplib, email, argparse, logging) входить
+# до стандартної бібліотеки Python і не потребує встановлення.
