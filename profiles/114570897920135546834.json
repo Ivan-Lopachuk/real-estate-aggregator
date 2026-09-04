@@ -1,5 +1,5 @@
 {
-  "place": "Гент",
+  "place": "Антверпен",
   "search": {
     "transaction": "rent",
     "property_types": [
@@ -12,17 +12,22 @@
     "bedrooms_max": null,
     "living_area_min": null,
     "postal_codes": [
-      "9000"
+      "2000",
+      "2050",
+      "2018",
+      "2020",
+      "2060",
+      "2030"
     ],
     "localities": [
-      "Гент"
+      "Антверпен"
     ]
   },
-  "interval_hours": 6,
+  "interval_hours": 1,
   "notify_email": "lolp.onga@gmail.com",
   "google_sub": "114570897920135546834",
   "login_email": "lolp.onga@gmail.com",
   "created_utc": "2026-09-04T01:52:40+00:00",
-  "updated_utc": "2026-09-04T11:33:13+00:00",
-  "last_sent_utc": "2026-09-04T11:34:00+00:00"
+  "updated_utc": "2026-09-04T15:45:50+00:00",
+  "last_sent_utc": null
 }
