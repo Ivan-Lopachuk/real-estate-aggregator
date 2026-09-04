@@ -3,7 +3,7 @@
 
 requests>=2.31       # HTTP-запити до JSON API сайтів
 PyYAML>=6.0          # читання config.yaml
-cloudscraper>=1.2.71 # для Zimmo: обходить Cloudflare-захист сторінки пошуку
+curl_cffi>=0.7      # для Zimmo: обходить Cloudflare-захист сторінки пошуку
 
 # Усе інше (sqlite3, smtplib, email, argparse, logging) входить
 # до стандартної бібліотеки Python і не потребує встановлення.
