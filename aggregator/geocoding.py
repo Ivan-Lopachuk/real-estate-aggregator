@@ -32,7 +32,7 @@ _cache: Optional[list[dict]] = None
 # найпоширеніших бельгійських міст, щоб "Гент" чи "Антверпен" теж
 # спрацьовували (у чаті й у формі "Розсилка" — обидва йдуть через
 # postal_codes_for_name нижче).
-_UKRAINIAN_ALIASES: dict[str, str] = {
+UKRAINIAN_ALIASES: dict[str, str] = {
     "гент": "Gent",
     "антверпен": "Antwerpen",
     "брюссель": "Brussel",
@@ -132,7 +132,7 @@ def postal_codes_for_name(
     needle = text.strip().lower()
     if not needle:
         return []
-    needle = _UKRAINIAN_ALIASES.get(needle, needle).lower()
+    needle = UKRAINIAN_ALIASES.get(needle, needle).lower()
     places = load_places() if places is None else places
 
     exact: list[str] = []
