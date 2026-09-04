@@ -52,7 +52,9 @@ from aggregator import geocoding, proximus  # noqa: E402
 from aggregator.config import HttpSettings, SearchCriteria  # noqa: E402
 from aggregator.dedup import dedupe_cross_site  # noqa: E402
 from aggregator.filters import ListingFilter  # noqa: E402
-from aggregator.github_store import GitHubStoreError, read_json, write_json, delete_json  # noqa: E402
+from aggregator.github_store import (  # noqa: E402
+    GitHubStoreError, read_json, write_json, delete_json, trigger_workflow,
+)
 from aggregator.models import Listing  # noqa: E402
 import aggregator.scrapers  # noqa: E402,F401  (імпорт реєструє immoweb/immovlan)
 from aggregator.scrapers.base import available_scrapers, get_scraper  # noqa: E402
@@ -77,6 +79,13 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 # напр. "nastya/real-estate-aggregator".
 GH_WRITE_TOKEN = os.environ.get("GH_WRITE_TOKEN", "")
 GH_REPO = os.environ.get("GH_REPO", "")
+# Файл workflow'у й гілка, які запускаються негайно після збереження
+# розсилки (щоб перший лист прийшов одразу, а не чекав до наступного
+# запланованого проходу). Токену GH_WRITE_TOKEN для цього додатково
+# потрібне право "Actions: Read and write" — без нього збереження
+# розсилки все одно спрацює, просто перший лист прийде за розкладом.
+GH_WORKFLOW_FILE = os.environ.get("GH_WORKFLOW_FILE", "check.yml")
+GH_BRANCH = os.environ.get("GH_BRANCH", "main")
 
 _MIN_INTERVAL_HOURS = 1
 _MAX_INTERVAL_HOURS = 168  # тиждень
@@ -610,6 +619,19 @@ def save_subscription():
     except GitHubStoreError:
         log.exception("розсилка: не вдалося записати профіль")
         return jsonify({"error": "Не вдалося зберегти розсилку (запис)."}), 502
+
+    # Найкраще зусилля: запускаємо перевірку негайно, щоб перший лист
+    # прийшов одразу, а не чекав до наступного запланованого проходу.
+    # Якщо не вийшло (напр. токену бракує права Actions) — не ламаємо
+    # збереження, профіль однаково спрацює на найближчому розкладі.
+    try:
+        trigger_workflow(GH_REPO, GH_WRITE_TOKEN, GH_WORKFLOW_FILE, GH_BRANCH)
+    except GitHubStoreError:
+        log.warning(
+            "розсилка: не вдалося запустити перевірку негайно "
+            "(профіль все одно збережено, спрацює за розкладом)",
+            exc_info=True,
+        )
 
     return jsonify({"subscription": profile})
 
