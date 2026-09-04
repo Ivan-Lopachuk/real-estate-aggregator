@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import html
 import logging
 import smtplib
 from abc import ABC, abstractmethod
@@ -71,6 +72,29 @@ def build_short_body(listings: Sequence[Listing], page_url: str = "") -> str:
     )
 
 
+def build_short_html(listings: Sequence[Listing], page_url: str = "") -> str:
+    """
+    HTML-варіант короткого листа (build_short_body) — та сама адреса
+    дошки, лише посилання показано клікабельним словом, а не повним,
+    часто дуже довгим, URL (у профілів розсилки він містить перелік
+    id усіх нових оголошень, ?ids=..., і в чистому тексті виглядав би
+    величезною нечитабельною стрічкою). Повертає "", якщо page_url
+    немає — тоді лист лишається лише текстовим (build_short_body сам
+    у цьому випадку віддає повний список замість короткого).
+    """
+    if not page_url:
+        return ""
+    safe_url = html.escape(page_url, quote=True)
+    return (
+        f"<p>Нових оголошень за вашими критеріями: <strong>{len(listings)}</strong>.</p>"
+        f'<p><a href="{safe_url}" '
+        'style="display:inline-block;padding:10px 18px;background:#2563eb;'
+        'color:#ffffff;text-decoration:none;border-radius:6px;'
+        'font-family:sans-serif;font-size:14px;">'
+        "Переглянути на дошці →</a></p>"
+    )
+
+
 # --- способи сповіщення -------------------------------------------
 
 class Notifier(ABC):
@@ -100,6 +124,12 @@ class EmailNotifier(Notifier):
         msg["From"] = self.s.from_address
         msg["To"] = ", ".join(self.s.to_addresses)
         msg.set_content(build_short_body(listings, self.page_url))
+        html_body = build_short_html(listings, self.page_url)
+        if html_body:
+            # Пошта, що вміє HTML, покаже кнопку-посилання замість
+            # довгого голого URL; що не вміє — побачить лише plain-text
+            # версію вище, як і раніше.
+            msg.add_alternative(html_body, subtype="html")
 
         if self.s.use_ssl:
             # Одразу зашифроване з'єднання (ukr.net, порт 465).
