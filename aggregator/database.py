@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable, Optional
 
+from . import dedup
 from .models import Listing
 
 # Стовпець назвали transaction_kind, бо TRANSACTION — службове слово SQL.
@@ -84,27 +85,11 @@ _MIGRATIONS: dict[str, str] = {
 # Довше не має сенсу — за цей час оголошення зазвичай уже здають/продають.
 _DUPLICATE_WINDOW_DAYS = 60
 
-# Різниця в житловій площі (м²), яку ще вважаємо «тим самим помешканням».
-# Різні сайти інколи трохи по-різному округлюють площу.
-_LIVING_AREA_TOLERANCE = 3.0
-
-
-def _duplicate_lookup_key(listing: Listing) -> Optional[tuple]:
-    """
-    Груба ознака «це, ймовірно, та сама нерухомість»: тип угоди, тип
-    житла, поштовий індекс і ціна. Повертає None, якщо якогось із цих
-    полів немає — тоді пошук дублікатів для оголошення не має сенсу.
-    """
-    if not listing.postal_code or listing.price is None or not listing.property_type:
-        return None
-    return (listing.transaction, listing.property_type, listing.postal_code, listing.price)
-
-
-def _values_compatible(a: Optional[float], b: Optional[float], tolerance: float = 0.0) -> bool:
-    """Однакові (з точністю до tolerance) АБО хоча б одне з них невідоме."""
-    if a is None or b is None:
-        return True
-    return abs(a - b) <= tolerance
+# Сама евристика "це, ймовірно, та сама нерухомість" — спільна з живим
+# AI-пошуком (server/app.py), див. aggregator/dedup.py.
+_duplicate_lookup_key = dedup.duplicate_key
+_values_compatible = dedup.values_compatible
+_LIVING_AREA_TOLERANCE = dedup.LIVING_AREA_TOLERANCE
 
 
 class Database:
@@ -328,19 +313,8 @@ class Database:
         candidate: Listing, confirmed_unique: list[Listing]
     ) -> Optional[str]:
         """Шукає схоже оголошення серед уже розглянутих у цьому ж проході."""
-        key = _duplicate_lookup_key(candidate)
-        if key is None:
-            return None
-        for other in confirmed_unique:
-            if other.site == candidate.site:
-                continue
-            if _duplicate_lookup_key(other) != key:
-                continue
-            if _values_compatible(candidate.bedrooms, other.bedrooms) and _values_compatible(
-                candidate.living_area, other.living_area, _LIVING_AREA_TOLERANCE
-            ):
-                return other.uid
-        return None
+        original = dedup.find_duplicate_in_batch(candidate, confirmed_unique)
+        return original.uid if original is not None else None
 
     def count(self) -> int:
         return self._conn.execute("SELECT COUNT(*) FROM listings").fetchone()[0]
