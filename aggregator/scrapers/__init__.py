@@ -9,6 +9,6 @@
 
 from .base import BaseScraper, available_scrapers, get_scraper, register  # noqa: F401
 from . import immoweb  # noqa: F401  (import заради реєстрації ImmowebScraper)
-from . import zimmo  # noqa: F401  (import заради реєстрації ZimmoScraper)
+from . import immovlan  # noqa: F401  (import заради реєстрації ImmovlanScraper)
 
 __all__ = ["BaseScraper", "available_scrapers", "get_scraper", "register"]
