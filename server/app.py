@@ -509,7 +509,11 @@ def save_subscription():
     profile["login_email"] = user["email"]
     profile["created_utc"] = (existing or {}).get("created_utc") or now
     profile["updated_utc"] = now
-    profile["last_sent_utc"] = (existing or {}).get("last_sent_utc")
+    # Свідомо скидаємо (а не лишаємо старе значення): людина щойно
+    # змінила критерії/місто, тож наступна перевірка (за розкладом
+    # Actions) має піти одразу, а не чекати залишок старого інтервалу
+    # від попереднього збереження.
+    profile["last_sent_utc"] = None
 
     try:
         write_json(
