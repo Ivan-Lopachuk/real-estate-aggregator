@@ -1,9 +1,9 @@
 # Зовнішні бібліотеки, потрібні для роботи програми.
 # Встановлення:  pip install -r requirements.txt
 
-requests>=2.31       # HTTP-запити до JSON API сайтів
+requests>=2.31       # HTTP-запити до сайтів
 PyYAML>=6.0          # читання config.yaml
-curl_cffi>=0.7      # для Zimmo: обходить Cloudflare-захист сторінки пошуку
+beautifulsoup4>=4.12 # розбір HTML-карток оголошень (Immovlan)
 
 # Усе інше (sqlite3, smtplib, email, argparse, logging) входить
 # до стандартної бібліотеки Python і не потребує встановлення.
