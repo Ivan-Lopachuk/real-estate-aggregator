@@ -157,9 +157,12 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
         return 0
     log.info("розсилка за профілями: перевіряю %d профіл(ів)", len(due))
 
+    base_page_url = config.webpage.url if config.webpage.enabled else ""
     sent_count = 0
+    any_new = False
     with Database(config.database_path) as db:
         for profile in due:
+            batch_since = datetime.now(timezone.utc).isoformat(timespec="seconds")
             listing_filter = ListingFilter(profile.search)
             matched: list[Listing] = []
             for site in config.sites:
@@ -181,15 +184,27 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                     email_settings = dataclasses.replace(
                         config.notifications.email, to_addresses=[profile.notify_email]
                     )
+                    page_url = _dashboard_link_for_batch(base_page_url, batch_since)
                     try:
-                        EmailNotifier(email_settings).notify(to_notify)
+                        EmailNotifier(email_settings, page_url).notify(to_notify)
                         sent_count += len(to_notify)
+                        any_new = True
                     except Exception:
                         log.exception("профіль %s: не вдалося надіслати лист", profile.id)
                         continue  # не позначаємо — спробуємо знову наступного разу
                 db.mark_notified_for_profile(profile.id, new_for_profile)
 
             profiles_module.mark_checked(profile)
+
+        # Щойно знайдені за профілями оголошення вже лежать у спільній
+        # таблиці (add_new вище) — лишається оновити docs/data.json, щоб
+        # посилання в листі («дошка з позначкою since=...») справді щось
+        # показало, а не порожню сторінку.
+        if any_new and config.webpage.enabled:
+            try:
+                webpage.write_data(db, config.webpage, config.search.summary)
+            except Exception:
+                log.exception("розсилка за профілями: не вдалося оновити веб-дошку")
 
     return sent_count
 
