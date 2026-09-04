@@ -413,13 +413,24 @@ def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[st
     Перевіряє форму розсилки. Повертає (готовий профіль без службових
     полів, None) якщо все гаразд, або (None, повідомлення про помилку).
     """
-    place = str(body.get("place") or "").strip()
-    if not place:
+    place_raw = str(body.get("place") or "").strip()
+    if not place_raw:
         return None, "Вкажи місто чи район."
 
-    postal_codes = geocoding.postal_codes_for_name(place)
-    if not postal_codes:
-        return None, f"Не знайшов населеного пункту «{place}» у Бельгії."
+    # Можна кілька через кому (як у config.yaml -> search.localities) —
+    # напр. "Gent, Kortrijk".
+    place_names = [p.strip() for p in place_raw.split(",") if p.strip()]
+    if not place_names:
+        return None, "Вкажи місто чи район."
+
+    postal_codes: list[str] = []
+    for name in place_names:
+        codes = geocoding.postal_codes_for_name(name)
+        if not codes:
+            return None, f"Не знайшов населеного пункту «{name}» у Бельгії."
+        for code in codes:
+            if code not in postal_codes:
+                postal_codes.append(code)
 
     notify_email = str(body.get("notify_email") or "").strip()
     if "@" not in notify_email or "." not in notify_email.split("@")[-1]:
@@ -446,10 +457,10 @@ def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[st
         "bedrooms_max": _opt_int(body.get("bedrooms_max")),
         "living_area_min": _opt_num(body.get("living_area_min")),
         "postal_codes": postal_codes,
-        "localities": [place],
+        "localities": place_names,
     }
     return {
-        "place": place,
+        "place": place_raw,
         "search": search,
         "interval_hours": interval_hours,
         "notify_email": notify_email,
