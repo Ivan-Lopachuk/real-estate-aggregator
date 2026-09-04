@@ -856,7 +856,7 @@ function saveSubscription() {
         return;
       }
       fillSubForm(res.data.subscription);
-      showSubStatus("Збережено! Листи почнуть приходити за новим розкладом.");
+      showSubStatus("Збережено! Перший лист прийде протягом кількох хвилин, далі — за обраним інтервалом.");
     })
     .catch(function () {
       showSubStatus("Не вдалося зв'язатись із сервером.", true);
