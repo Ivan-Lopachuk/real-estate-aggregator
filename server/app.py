@@ -246,7 +246,13 @@ def _resolve_place(name: str) -> tuple[list[str], str]:
     """
     codes = geocoding.postal_codes_for_name(name)
     if codes:
-        return codes, name
+        # Навіть коли знайшлось одразу, назва могла прийти з короткого
+        # вбудованого списку (напр. "Гент" -> "Gent" — geocoding.py сам
+        # перекладає його лише "про себе", для власного пошуку). Тут
+        # повертаємо саме латинську форму, інакше localities-фільтр
+        # порівнював би кирилицю з латиницею й ніколи б не збігався.
+        canonical = geocoding.UKRAINIAN_ALIASES.get(name.strip().lower(), name)
+        return codes, canonical
 
     official = _ai_official_place_name(name)
     if official:
@@ -540,13 +546,23 @@ def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[st
         if str(t).lower() in ("house", "apartment")
     ] or ["house", "apartment"]
 
+    price_min = _opt_num(body.get("price_min"))
+    price_max = _opt_num(body.get("price_max"))
+    if price_min is not None and price_max is not None and price_min > price_max:
+        return None, "«Ціна від» не може бути більшою за «Ціна до»."
+
+    bedrooms_min = _opt_int(body.get("bedrooms_min"))
+    bedrooms_max = _opt_int(body.get("bedrooms_max"))
+    if bedrooms_min is not None and bedrooms_max is not None and bedrooms_min > bedrooms_max:
+        return None, "«Спалень від» не може бути більшим за «Спалень до»."
+
     search = {
         "transaction": "sale" if body.get("transaction") == "sale" else "rent",
         "property_types": property_types,
-        "price_min": _opt_num(body.get("price_min")),
-        "price_max": _opt_num(body.get("price_max")),
-        "bedrooms_min": _opt_int(body.get("bedrooms_min")),
-        "bedrooms_max": _opt_int(body.get("bedrooms_max")),
+        "price_min": price_min,
+        "price_max": price_max,
+        "bedrooms_min": bedrooms_min,
+        "bedrooms_max": bedrooms_max,
         "living_area_min": _opt_num(body.get("living_area_min")),
         "postal_codes": postal_codes,
         # Канонічні (латиницею) назви — не сирий текст із форми: інакше
