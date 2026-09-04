@@ -20,7 +20,7 @@ from aggregator.config import Config, ConfigError
 
 # Імпорт пакета scrapers реєструє всі доступні scraper'и (immoweb тощо).
 import aggregator.scrapers  # noqa: F401
-from aggregator.runner import run_forever, run_once
+from aggregator.runner import run_forever, run_once, run_profiles
 
 
 def parse_args(argv=None) -> argparse.Namespace:
@@ -74,7 +74,12 @@ def main(argv=None) -> int:
         return 0
 
     new_count = run_once(config)
-    print(f"Готово. Нових оголошень: {new_count}.")
+    try:
+        profile_count = run_profiles(config)
+    except Exception:
+        logging.getLogger(__name__).exception("розсилка за профілями завершилась помилкою")
+        profile_count = 0
+    print(f"Готово. Нових оголошень: {new_count}. Листів за профілями розсилки: {profile_count}.")
     return 0
 
 
