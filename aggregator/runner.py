@@ -192,7 +192,12 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                 except Exception:
                     log.exception("профіль %s: scraper %r впав — пропускаю сайт", profile.id, site)
                     continue
-                matched.extend(listing_filter.apply(fetched))
+                kept = listing_filter.apply(fetched)
+                log.info(
+                    "профіль %s: %s — отримано %d, відповідають критеріям %d",
+                    profile.id, site, len(fetched), len(kept),
+                )
+                matched.extend(kept)
 
             if matched:
                 newly_inserted = db.add_new(matched)  # спільна таблиця — дедуплікація й кеш оптики
@@ -200,8 +205,18 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                     _update_fiber_availability(db, newly_inserted, config.http.request_delay_seconds)
 
             new_for_profile = db.new_for_profile(profile.id, matched)
+            log.info(
+                "профіль %s: усього підходить критеріям %d, з них нових саме для цього профілю %d",
+                profile.id, len(matched), len(new_for_profile),
+            )
             if new_for_profile:
-                to_notify, _duplicates = db.split_cross_site_duplicates(new_for_profile)
+                to_notify, duplicates = db.split_cross_site_duplicates(new_for_profile)
+                if duplicates:
+                    log.info(
+                        "профіль %s: %d із нових — імовірно, те саме оголошення з іншого сайту "
+                        "(сповіщення не дублюємо)",
+                        profile.id, len(duplicates),
+                    )
                 if to_notify:
                     email_settings = dataclasses.replace(
                         config.notifications.email, to_addresses=[profile.notify_email]
