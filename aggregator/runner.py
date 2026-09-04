@@ -36,11 +36,32 @@ def _dashboard_link_for_batch(page_url: str, since: str) -> str:
     дошку одразу відфільтрованою лише на оголошення з цього-таки листа
     (а не на всю історію за 90 днів). Сторінка docs/index.html сама вміє
     читати цей параметр.
+
+    Працює надійно лише коли всі оголошення в листі щойно вперше
+    з'явились у базі за ЦЕЙ прохід (так і є в run_once) — тому для
+    основного, єдиного пошуку з config.yaml.
     """
     if not page_url:
         return page_url
     separator = "&" if "?" in page_url else "?"
     return f"{page_url}{separator}since={quote(since)}"
+
+
+def _dashboard_link_for_uids(page_url: str, uids: list[str]) -> str:
+    """
+    Те саме призначення, що й _dashboard_link_for_batch, але для
+    профілів розсилки (run_profiles): оголошення, нове для конкретного
+    профілю, могло потрапити в базу набагато раніше — знайшов його
+    основний пошук чи інший профіль. Тоді first_seen_utc старіше за
+    момент цього запуску, і фільтр за часом (?since=) на дошці
+    помилково показав би "нічого немає". Тут натомість передаємо
+    точний перелік id — дошка показує рівно ці оголошення, незалежно
+    від того, коли їх уперше побачили.
+    """
+    if not page_url or not uids:
+        return page_url
+    separator = "&" if "?" in page_url else "?"
+    return f"{page_url}{separator}ids={quote(','.join(uids))}"
 
 
 def _update_fiber_availability(db: Database, listings: list[Listing], delay_seconds: float) -> None:
@@ -162,7 +183,6 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
     any_new = False
     with Database(config.database_path) as db:
         for profile in due:
-            batch_since = datetime.now(timezone.utc).isoformat(timespec="seconds")
             listing_filter = ListingFilter(profile.search)
             matched: list[Listing] = []
             for site in config.sites:
@@ -184,7 +204,7 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                     email_settings = dataclasses.replace(
                         config.notifications.email, to_addresses=[profile.notify_email]
                     )
-                    page_url = _dashboard_link_for_batch(base_page_url, batch_since)
+                    page_url = _dashboard_link_for_uids(base_page_url, [l.uid for l in to_notify])
                     try:
                         EmailNotifier(email_settings, page_url).notify(to_notify)
                         sent_count += len(to_notify)
