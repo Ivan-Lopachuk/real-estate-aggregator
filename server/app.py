@@ -103,7 +103,7 @@ _SYSTEM_PROMPT = """\
 
 {
   "reply": "коротка дружня відповідь українською — що саме шукаємо",
-  "place": "назва міста/району, яку згадала людина, мовою оригіналу (напр. 'Antwerpen', 'Merksem'); null, якщо не назвала",
+  "place": "офіційна нідерландська/французька назва міста чи району в Бельгії, яку мала на увазі людина — навіть якщо вона написала українською, з опискою чи неточною транслітерацією (напр. 'Дендермонде' -> 'Dendermonde', 'Антверпен' -> 'Antwerpen', 'Мерксем' -> 'Merksem'); null, якщо не назвала",
   "transaction": "rent" або "sale"; null, якщо не зрозуміло (тоді вважай rent)
   "property_types": підмножина ["house", "apartment"] або null (тоді обидва)
   "price_min": число (євро) або null
@@ -170,6 +170,82 @@ def _extract_json(text: str) -> Optional[dict]:
         return json.loads(match.group(0))
     except json.JSONDecodeError:
         return None
+
+
+def _ai_official_place_name(name: str) -> Optional[str]:
+    """
+    Просить AI назвати офіційну (нідерландську/французьку) назву цього
+    населеного пункту чи району в Бельгії. Довідник geo-api.zimmo.be
+    (geocoding.py) знає назви лише цими мовами (плюс невеликий власний
+    список найпоширеніших українських альтернатив) — а людина могла
+    написати щось менш поширене українською, з опискою чи неточною
+    транслітерацією (напр. "Дендермонде" -> "Dendermonde"). Викликається
+    лише як другий крок, коли пряме порівняння (geocoding.py) вже не
+    знайшло нічого.
+    """
+    if not OPENROUTER_API_KEY:
+        return None
+    try:
+        resp = requests.post(
+            OPENROUTER_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": OPENROUTER_MODEL,
+                "messages": [
+                    {"role": "system", "content": (
+                        "Тобі дають назву населеного пункту чи району в Бельгії "
+                        "(можливо, українською, з опискою чи неточною "
+                        "транслітерацією). Відповідай ЛИШЕ JSON-об'єктом виду "
+                        '{"official_name": "..."} — офіційна нідерландська чи '
+                        "французька назва цього місця, як вона пишеться в "
+                        "адресах (напр. Dendermonde, Lokeren, Liège, Antwerpen). "
+                        'Якщо не впевнений або це явно не в Бельгії — '
+                        '{"official_name": null}.'
+                    )},
+                    {"role": "user", "content": name},
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": 0,
+            },
+            timeout=15,
+        )
+        resp.raise_for_status()
+        content = resp.json()["choices"][0]["message"]["content"]
+    except Exception:
+        log.exception("не вдалося уточнити назву міста через AI: %r", name)
+        return None
+
+    data = _extract_json(content) or {}
+    official = data.get("official_name")
+    return str(official).strip() if official else None
+
+
+def _resolve_place(name: str) -> tuple[list[str], str]:
+    """
+    Поштові індекси для назви міста/району + "канонічна" (латиницею,
+    як у geo-api.zimmo.be) назва, яку варто зберігати в localities —
+    інакше точковий фільтр за назвою в filters.py порівнював би
+    українську назву з латинською й ніколи б не збігався.
+
+    Спершу пробує звичайний пошук (geocoding.py — працює для 'Gent',
+    'Antwerpen' і невеликого списку відомих українських альтернатив).
+    Якщо не знайшлось — просить AI назвати офіційну назву й пробує ще
+    раз із нею.
+    """
+    codes = geocoding.postal_codes_for_name(name)
+    if codes:
+        return codes, name
+
+    official = _ai_official_place_name(name)
+    if official:
+        codes = geocoding.postal_codes_for_name(official)
+        if codes:
+            return codes, official
+
+    return [], name
 
 
 def _build_criteria(parsed: dict, postal_codes: list[str], place: Optional[str] = None) -> SearchCriteria:
@@ -319,7 +395,7 @@ def chat():
     place = parsed.get("place")
     postal_codes: list[str] = []
     if place:
-        postal_codes = geocoding.postal_codes_for_name(str(place))
+        postal_codes, place = _resolve_place(str(place))
         if not postal_codes:
             return jsonify({
                 "reply": f"Не знайшов населеного пункту «{place}» у Бельгії. "
@@ -429,10 +505,12 @@ def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[st
         return None, "Вкажи місто чи район."
 
     postal_codes: list[str] = []
+    canonical_names: list[str] = []
     for name in place_names:
-        codes = geocoding.postal_codes_for_name(name)
+        codes, canonical = _resolve_place(name)
         if not codes:
             return None, f"Не знайшов населеного пункту «{name}» у Бельгії."
+        canonical_names.append(canonical)
         for code in codes:
             if code not in postal_codes:
                 postal_codes.append(code)
@@ -462,7 +540,10 @@ def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[st
         "bedrooms_max": _opt_int(body.get("bedrooms_max")),
         "living_area_min": _opt_num(body.get("living_area_min")),
         "postal_codes": postal_codes,
-        "localities": place_names,
+        # Канонічні (латиницею) назви — не сирий текст із форми: інакше
+        # точковий фільтр за назвою в filters.py порівнював би українську
+        # назву з латинською назвою в оголошенні й ніколи б не збігався.
+        "localities": canonical_names,
     }
     return {
         "place": place_raw,
