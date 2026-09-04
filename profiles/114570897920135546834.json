@@ -1,0 +1,35 @@
+{
+  "place": "Gent, Antwerpen",
+  "search": {
+    "transaction": "rent",
+    "property_types": [
+      "house",
+      "apartment"
+    ],
+    "price_min": 600.0,
+    "price_max": 800.0,
+    "bedrooms_min": 1,
+    "bedrooms_max": 1,
+    "living_area_min": 35.0,
+    "postal_codes": [
+      "9000",
+      "2000",
+      "2050",
+      "2018",
+      "2020",
+      "2060",
+      "2030"
+    ],
+    "localities": [
+      "Gent",
+      "Antwerpen"
+    ]
+  },
+  "interval_hours": 3,
+  "notify_email": "lolp.onga@gmail.com",
+  "google_sub": "114570897920135546834",
+  "login_email": "lolp.onga@gmail.com",
+  "created_utc": "2026-09-04T00:42:43+00:00",
+  "updated_utc": "2026-09-04T00:42:43+00:00",
+  "last_sent_utc": null
+}
