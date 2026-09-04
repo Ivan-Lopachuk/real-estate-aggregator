@@ -82,6 +82,32 @@ def write_json(
         raise GitHubStoreError(f"GitHub API {resp.status_code} (PUT {path}): {resp.text[:300]}")
 
 
+def trigger_workflow(
+    repo: str, token: str, workflow_file: str, ref: str = "main",
+    timeout: float = 15.0, session: Optional[requests.Session] = None,
+) -> None:
+    """
+    Запускає workflow (напр. `.github/workflows/check.yml`) негайно —
+    так само, як кнопка "Run workflow" на вкладці Actions. Токен
+    повинен мати право **Actions: Read and write** — самого лише
+    Contents (потрібного для profiles/*.json) для цього не досить,
+    GitHub інакше відмовить 403/404.
+
+    Використовується сервером AI-чату (server/app.py) одразу після
+    збереження профілю розсилки, щоб перший лист прийшов негайно, а не
+    чекав до наступного запланованого проходу (раз на годину).
+    """
+    http = session or requests
+    resp = http.post(
+        f"{_API_ROOT}/repos/{repo}/actions/workflows/{workflow_file}/dispatches",
+        headers=_headers(token), json={"ref": ref}, timeout=timeout,
+    )
+    if not resp.ok:
+        raise GitHubStoreError(
+            f"GitHub API {resp.status_code} (dispatch {workflow_file}): {resp.text[:300]}"
+        )
+
+
 def delete_json(
     repo: str, token: str, path: str, sha: str, message: str,
     timeout: float = 15.0, session: Optional[requests.Session] = None,
