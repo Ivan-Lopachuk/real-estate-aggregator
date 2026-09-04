@@ -1,5 +1,5 @@
 {
-  "place": "Gent, Antwerpen",
+  "place": "Liège",
   "search": {
     "transaction": "rent",
     "property_types": [
@@ -12,17 +12,10 @@
     "bedrooms_max": 1,
     "living_area_min": 35.0,
     "postal_codes": [
-      "9000",
-      "2000",
-      "2050",
-      "2018",
-      "2020",
-      "2060",
-      "2030"
+      "4000"
     ],
     "localities": [
-      "Gent",
-      "Antwerpen"
+      "Liège"
     ]
   },
   "interval_hours": 3,
@@ -30,6 +23,6 @@
   "google_sub": "114570897920135546834",
   "login_email": "lolp.onga@gmail.com",
   "created_utc": "2026-09-04T00:42:43+00:00",
-  "updated_utc": "2026-09-04T00:42:43+00:00",
+  "updated_utc": "2026-09-04T01:09:33+00:00",
   "last_sent_utc": "2026-09-04T00:47:46+00:00"
 }
