@@ -1,8 +1,28 @@
 {
- "generated_utc": "2026-09-04T15:04:57+00:00",
+ "generated_utc": "2026-09-04T15:36:16+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immovlan:rwc43339",
+   "site": "immovlan",
+   "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rwc43339",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 779.0,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 48.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": null,
+   "house_number": null,
+   "photo_url": "https://api-image.immovlan.be/v1/property/RWC43339/thumbnail-webp/Medium?h=280",
+   "fiber_available": null,
+   "first_seen_utc": "2026-09-04T15:36:14+00:00"
+  },
   {
    "uid": "immoweb:21759256",
    "site": "immoweb",
@@ -8001,7 +8021,13 @@
    "house_number": "8",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/2df7c819-9253-4342-bc34-13fc3a0d2f92/300x300/a08c8fa5935a4daab01f34759af64dcb.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-03T14:08:19+00:00"
+   "first_seen_utc": "2026-09-03T14:08:19+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/ground-floor/for-rent/8500/kortrijk/rbw30065"
+    }
+   ]
   },
   {
    "uid": "immoweb:21780110",
@@ -8081,7 +8107,13 @@
    "house_number": "20",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/16ed6b91-b681-457a-92c6-8d84ee731e63/300x300/1f7cf777a99cb8a7235786c6c5b754f3.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-03T14:08:19+00:00"
+   "first_seen_utc": "2026-09-03T14:08:19+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/8500/kortrijk/rbw71437"
+    }
+   ]
   },
   {
    "uid": "immoweb:21772050",
@@ -8101,7 +8133,17 @@
    "house_number": "4",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/4da5442c-af18-4727-9262-199a3149e698/300x300/72e97cc2829cbab65608d4251656642a.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-03T14:08:19+00:00"
+   "first_seen_utc": "2026-09-03T14:08:19+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rwc43193"
+    },
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rwc43116"
+    }
+   ]
   },
   {
    "uid": "immoweb:21769354",
