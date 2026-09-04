@@ -1,0 +1,32 @@
+{
+  "place": "Гент, Аалст, Дендермонде",
+  "search": {
+    "transaction": "rent",
+    "property_types": [
+      "apartment"
+    ],
+    "price_min": 600.0,
+    "price_max": 800.0,
+    "bedrooms_min": 1,
+    "bedrooms_max": 0,
+    "living_area_min": 35.0,
+    "postal_codes": [
+      "9000",
+      "9300",
+      "3800",
+      "9200"
+    ],
+    "localities": [
+      "Гент",
+      "Aalst",
+      "Dendermonde"
+    ]
+  },
+  "interval_hours": 1,
+  "notify_email": "nastyaignatenko200@gmail.com",
+  "google_sub": "117958349705524858708",
+  "login_email": "nastyaignatenko200@gmail.com",
+  "created_utc": "2026-09-04T17:35:56+00:00",
+  "updated_utc": "2026-09-04T17:35:56+00:00",
+  "last_sent_utc": null
+}
