@@ -79,7 +79,7 @@ notifications:
   # console = лише вивід у термінал
   # email   = надіслати лист
   # both    = і те, і те
-  method: both
+  method: console
 
   # Заповніть цей блок, лише якщо method = email або both.
   # Нижче — налаштування для пошти ukr.net.
