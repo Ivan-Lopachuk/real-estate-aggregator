@@ -266,7 +266,7 @@
     </nav>
     <h1>Дошка оголошень нерухомості</h1>
     <p class="hero-subtitle">
-      AI перевіряє Immoweb і Zimmo та показує результати за секунди —
+      AI перевіряє Immoweb і Immovlan та показує результати за секунди —
       просто напиши, що шукаєш
     </p>
     <form class="chat-bar" id="chatForm">
@@ -415,8 +415,8 @@ function fmtWhen(iso) {
   return "побачено " + days + " дн. тому";
 }
 function siteLabel(url) {
-  if (url.indexOf("zimmo.be") !== -1) return "Zimmo";
   if (url.indexOf("immoweb.be") !== -1) return "Immoweb";
+  if (url.indexOf("immovlan.be") !== -1) return "Immovlan";
   return "сайті";
 }
 function metaLine(l) {
@@ -577,7 +577,7 @@ function render() {
     empty.appendChild(buildEmptyState(
       "🏠",
       "Почни з пошуку",
-      "Напиши запит у рядок пошуку вгорі — можна будь-яке місто чи район у Бельгії. AI перевірить Immoweb і Zimmo та за кілька секунд покаже результати прямо тут.",
+      "Напиши запит у рядок пошуку вгорі — можна будь-яке місто чи район у Бельгії. AI перевірить Immoweb і Immovlan та за кілька секунд покаже результати прямо тут.",
       SUGGESTIONS
     ));
     empty.appendChild(buildStepsRow());
@@ -637,7 +637,7 @@ function buildEmptyState(icon, title, text, suggestions) {
 function buildStepsRow() {
   var steps = [
     "Пишеш у пошук, що шукаєш — місто, ціну, кількість спалень",
-    "AI перевіряє Immoweb і Zimmo та одразу показує знайдене",
+    "AI перевіряє Immoweb і Immovlan та одразу показує знайдене",
     "Результати з'являються тут же — фото, ціна, посилання"
   ];
   var row = document.createElement("div");
