@@ -3,7 +3,6 @@
   "search": {
     "transaction": "rent",
     "property_types": [
-      "house",
       "apartment"
     ],
     "price_min": 600.0,
@@ -30,6 +29,6 @@
   "google_sub": "117958349705524858708",
   "login_email": "nastyaignatenko200@gmail.com",
   "created_utc": "2026-09-04T17:35:56+00:00",
-  "updated_utc": "2026-09-04T18:32:19+00:00",
-  "last_sent_utc": "2026-09-04T18:33:59+00:00"
+  "updated_utc": "2026-09-04T18:55:44+00:00",
+  "last_sent_utc": null
 }
