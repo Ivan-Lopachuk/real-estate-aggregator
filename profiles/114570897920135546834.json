@@ -1,0 +1,28 @@
+{
+  "place": "Gent",
+  "search": {
+    "transaction": "rent",
+    "property_types": [
+      "house",
+      "apartment"
+    ],
+    "price_min": null,
+    "price_max": 700.0,
+    "bedrooms_min": null,
+    "bedrooms_max": null,
+    "living_area_min": null,
+    "postal_codes": [
+      "9000"
+    ],
+    "localities": [
+      "Gent"
+    ]
+  },
+  "interval_hours": 6,
+  "notify_email": "lolp.onga@gmail.com",
+  "google_sub": "114570897920135546834",
+  "login_email": "lolp.onga@gmail.com",
+  "created_utc": "2026-09-04T01:30:00+00:00",
+  "updated_utc": "2026-09-04T01:30:00+00:00",
+  "last_sent_utc": null
+}
