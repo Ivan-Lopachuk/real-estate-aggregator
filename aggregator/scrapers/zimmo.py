@@ -40,7 +40,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Iterator, Optional
 
-import cloudscraper
+from curl_cffi import requests as cffi_requests
 
 from .. import geocoding
 from ..config import HttpSettings, SearchCriteria
@@ -64,17 +64,14 @@ class ZimmoScraper(BaseScraper):
     def __init__(self, criteria: SearchCriteria, http: HttpSettings) -> None:
         super().__init__(criteria, http)
         # Сторінка пошуку Zimmo (на відміну від Immoweb) стоїть за
-        # Cloudflare-захистом, який блокує звичайні запити requests
-        # (403 Forbidden) — навіть з "браузерним" User-Agent. cloudscraper
-        # сам розв'язує JS-виклик Cloudflare й повертає готову cookie,
-        # тож далі працює так само, як звичайна requests.Session.
-        self.session = cloudscraper.create_scraper()
-        self.session.headers.update(
-            {
-                "User-Agent": http.user_agent,
-                "Accept-Language": "en-US,en;q=0.9",
-            }
-        )
+        # Cloudflare-захистом. Проста бібліотека requests (і навіть
+        # cloudscraper, яка лише розв'язує JS-загадку) віддає 403 —
+        # причина глибша: Cloudflare розпізнає непрозорий "відбиток"
+        # TLS-з'єднання (JA3), яким Python-requests відрізняється від
+        # справжнього Chrome. curl_cffi відтворює TLS-з'єднання Chrome
+        # один-в-один (через libcurl/BoringSSL, а не системний OpenSSL),
+        # тож відбиток той самий незалежно від ОС — де запускати.
+        self.session = cffi_requests.Session(impersonate="chrome124")
 
     def fetch(self) -> Iterator[Listing]:
         status_segment = _TRANSACTION_TO_SEGMENT.get(self.criteria.transaction, "te-huur")
