@@ -362,10 +362,18 @@
 var STORE_KEY = "reab:opened";        // { uid: ISO-час коли позначено }
 var DATA = null;
 var onlyUnseen = false;
-// Якщо дошку відкрито за посиланням з листа (?since=...), показуємо
-// лише оголошення саме з цього листа (нові за останні ~6 год), а не
-// всю історію. Переглянуті серед них лишаються видимими, просто сіріють.
+// Якщо дошку відкрито за посиланням з листа, показуємо лише
+// оголошення саме з цього листа, а не всю історію. Переглянуті серед
+// них лишаються видимими, просто сіріють. Два варіанти позначки:
+//  ?since=<час>   — основна розсилка (усі нові оголошення справді
+//                   вперше з'явились у базі саме цього прогону);
+//  ?ids=<uid,uid> — розсилка за профілем ("✉ Розсилка"): оголошення
+//                   могло бути в базі й раніше (знайшов основний
+//                   пошук чи інший профіль), тож фільтр за часом тут
+//                   ненадійний — натомість точний перелік id.
 var sinceFilter = new URLSearchParams(location.search).get("since");
+var idsFilter = new URLSearchParams(location.search).get("ids");
+var idsFilterSet = idsFilter ? new Set(idsFilter.split(",")) : null;
 
 // Що зараз показано в основному списку:
 //  "empty"  — сторінку щойно відкрито без ?since= і без пошуку в чаті — порожньо
@@ -529,6 +537,9 @@ function buildCard(l, onChange) {
 function currentBase() {
   if (mode === "search") return searchResults;
   if (mode === "since") {
+    if (idsFilterSet) {
+      return DATA.listings.filter(function (l) { return idsFilterSet.has(l.uid); });
+    }
     return DATA.listings.filter(function (l) { return l.first_seen_utc >= sinceFilter; });
   }
   return [];
@@ -966,7 +977,7 @@ function initChat() {
 
 function init(data) {
   DATA = data;
-  if (sinceFilter) mode = "since";
+  if (sinceFilter || idsFilterSet) mode = "since";
 
   document.getElementById("filterBtn").addEventListener("click", function () {
     onlyUnseen = !onlyUnseen;
