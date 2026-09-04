@@ -4,7 +4,7 @@
 
 Навіщо він потрібен, якщо решта проєкту — статичні файли на GitHub
 Pages: щоб чат міг ПРЯМО ЗАРАЗ (за кілька секунд) запустити пошук по
-Immoweb і Zimmo та повернути відповідь. Статична сторінка нічого не
+Immoweb і Immovlan та повернути відповідь. Статична сторінка нічого не
 запускає сама — потрібен код, що постійно (чи хоча б за запитом)
 працює десь окремо. Це і є той код.
 
@@ -13,10 +13,11 @@ Immoweb і Zimmo та повернути відповідь. Статична с
     2. Просить AI (через OpenRouter) розібрати його на критерії пошуку
        (місто, ціна, спальні, площа тощо) — модель повертає суворий JSON.
     3. Назву міста/району перетворює на поштові індекси через
-       aggregator/geocoding.py (спільний з Zimmo-scraper довідник).
+       aggregator/geocoding.py.
     4. Запускає ті самі scraper'и, що й основна програма
        (aggregator/scrapers/), і той самий фільтр (aggregator/filters.py) —
-       жодного дубльованого коду.
+       жодного дубльованого коду. Оголошення, що, судячи з усього, те
+       саме на іншому сайті, прибираються (aggregator/dedup.py).
     5. Повертає знайдені оголошення й коротку відповідь AI.
 
 Захист: заголовок `X-Access-Code` має збігатися зі змінною середовища
@@ -49,10 +50,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from aggregator import geocoding, proximus  # noqa: E402
 from aggregator.config import HttpSettings, SearchCriteria  # noqa: E402
+from aggregator.dedup import dedupe_cross_site  # noqa: E402
 from aggregator.filters import ListingFilter  # noqa: E402
 from aggregator.github_store import GitHubStoreError, read_json, write_json, delete_json  # noqa: E402
 from aggregator.models import Listing  # noqa: E402
-import aggregator.scrapers  # noqa: E402,F401  (імпорт реєструє immoweb/zimmo)
+import aggregator.scrapers  # noqa: E402,F401  (імпорт реєструє immoweb/immovlan)
 from aggregator.scrapers.base import available_scrapers, get_scraper  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s")
@@ -201,13 +203,16 @@ def _search_live(criteria: SearchCriteria) -> list[Listing]:
             log.exception("чат: scraper %r впав", site)
             continue
         matched.extend(listing_filter.apply(fetched))
-    return matched
+    # Той самий рієлтор часто виставляє одну нерухомість одразу на
+    # кількох сайтах — без бази даних (тут її немає, пошук живий,
+    # одноразовий), тож дублікати шукаємо лише в межах цього списку.
+    return dedupe_cross_site(matched)
 
 
 def _parse_listed_at(value: str) -> Optional[datetime]:
     """
-    Immoweb і Zimmo дають дату в трохи різних форматах (мілісекунди й
-    "Z" проти "+00:00") — порівнювати їх як рядки ненадійно, тож завжди
+    Сайти дають дату в трохи різних форматах (мілісекунди й "Z" проти
+    "+00:00") — порівнювати їх як рядки ненадійно, тож завжди
     розбираємо у справжній datetime.
     """
     try:

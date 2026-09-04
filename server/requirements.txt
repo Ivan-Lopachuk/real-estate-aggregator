@@ -1,8 +1,9 @@
 # Бібліотеки для сервера AI-чату (server/app.py).
 # Встановлення:  pip install -r server/requirements.txt
 
-flask>=3.0         # веб-сервер
-flask-cors>=4.0    # дозволяє дошці (GitHub Pages) звертатись сюди з іншого домену
-requests>=2.31     # запити до OpenRouter і до Immoweb/Zimmo (той самий пакет, що й у aggregator/)
-PyYAML>=6.0        # aggregator/config.py читає YAML навіть при імпорті класів (без цього не імпортується)
-google-auth>=2.29  # перевірка справжності токена від "Увійти через Google"
+flask>=3.0           # веб-сервер
+flask-cors>=4.0      # дозволяє дошці (GitHub Pages) звертатись сюди з іншого домену
+requests>=2.31       # запити до OpenRouter і до Immoweb/Immovlan (той самий пакет, що й у aggregator/)
+PyYAML>=6.0          # aggregator/config.py читає YAML навіть при імпорті класів (без цього не імпортується)
+beautifulsoup4>=4.12 # aggregator/scrapers/immovlan.py — розбір HTML-карток
+google-auth>=2.29    # перевірка справжності токена від "Увійти через Google"
