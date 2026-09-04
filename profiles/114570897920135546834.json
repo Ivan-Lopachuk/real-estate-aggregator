@@ -1,0 +1,39 @@
+{
+  "place": "Гент, Антверпен, Дендермонд, Остенде",
+  "search": {
+    "transaction": "rent",
+    "property_types": [
+      "house",
+      "apartment"
+    ],
+    "price_min": 500.0,
+    "price_max": 700.0,
+    "bedrooms_min": 1,
+    "bedrooms_max": null,
+    "living_area_min": null,
+    "postal_codes": [
+      "9000",
+      "2000",
+      "2050",
+      "2018",
+      "2020",
+      "2060",
+      "2030",
+      "9200",
+      "8400"
+    ],
+    "localities": [
+      "Гент",
+      "Антверпен",
+      "Dendermonde",
+      "Остенде"
+    ]
+  },
+  "interval_hours": 6,
+  "notify_email": "lolp.onga@gmail.com",
+  "google_sub": "114570897920135546834",
+  "login_email": "lolp.onga@gmail.com",
+  "created_utc": "2026-09-04T17:29:36+00:00",
+  "updated_utc": "2026-09-04T17:29:36+00:00",
+  "last_sent_utc": null
+}
