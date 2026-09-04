@@ -149,6 +149,18 @@ class ResolvePlaceTests(unittest.TestCase):
         ai_call.assert_not_called()
         geocode.assert_called_once()
 
+    def test_known_ukrainian_alias_is_translated_even_without_ai(self):
+        # "Гент" знаходиться одразу через geocoding.UKRAINIAN_ALIASES —
+        # canonical мав би бути "Gent" (латиницею), а не сирий кириличний
+        # текст, інакше localities-фільтр (порівняння з listing.locality,
+        # завжди латиницею) ніколи б не збігався.
+        with patch.object(chat_app.geocoding, "postal_codes_for_name", return_value=["9000"]), \
+             patch.object(chat_app, "_ai_official_place_name") as ai_call:
+            codes, canonical = chat_app._resolve_place("Гент")
+        self.assertEqual(codes, ["9000"])
+        self.assertEqual(canonical, "Gent")
+        ai_call.assert_not_called()
+
     def test_ai_fallback_resolves_unknown_ukrainian_spelling(self):
         def fake_geocode(name):
             return ["9200"] if name == "Dendermonde" else []
@@ -291,6 +303,36 @@ class ValidateSubscriptionBodyTests(unittest.TestCase):
         self.assertEqual(profile["place"], "Дендермонде, Локерен")
         self.assertEqual(profile["search"]["localities"], ["Dendermonde", "Lokeren"])
         self.assertEqual(profile["search"]["postal_codes"], ["9200", "9160"])
+
+    def test_bedrooms_max_below_min_is_rejected(self):
+        # Саме цей стан ("від 1 до 0") мовчки перетворював профіль на
+        # такий, що ніколи нічого не знайде — тепер відхиляється одразу.
+        with patch.object(chat_app.geocoding, "postal_codes_for_name", side_effect=self._geocode_ok):
+            profile, error = chat_app._validate_subscription_body({
+                "place": "Gent", "notify_email": "a@b.com", "interval_hours": 6,
+                "bedrooms_min": 1, "bedrooms_max": 0,
+            })
+        self.assertIsNone(profile)
+        self.assertIn("Спалень", error)
+
+    def test_price_max_below_min_is_rejected(self):
+        with patch.object(chat_app.geocoding, "postal_codes_for_name", side_effect=self._geocode_ok):
+            profile, error = chat_app._validate_subscription_body({
+                "place": "Gent", "notify_email": "a@b.com", "interval_hours": 6,
+                "price_min": 800, "price_max": 600,
+            })
+        self.assertIsNone(profile)
+        self.assertIn("Ціна", error)
+
+    def test_equal_min_and_max_bedrooms_is_allowed(self):
+        with patch.object(chat_app.geocoding, "postal_codes_for_name", side_effect=self._geocode_ok):
+            profile, error = chat_app._validate_subscription_body({
+                "place": "Gent", "notify_email": "a@b.com", "interval_hours": 6,
+                "bedrooms_min": 1, "bedrooms_max": 1,
+            })
+        self.assertIsNone(error)
+        self.assertEqual(profile["search"]["bedrooms_min"], 1)
+        self.assertEqual(profile["search"]["bedrooms_max"], 1)
 
     def test_one_unknown_city_among_several_is_rejected_by_name(self):
         codes_by_name = {"Gent": ["9000"]}
