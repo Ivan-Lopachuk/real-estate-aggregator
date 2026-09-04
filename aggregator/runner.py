@@ -195,7 +195,9 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                 matched.extend(listing_filter.apply(fetched))
 
             if matched:
-                db.add_new(matched)  # спільна таблиця — дедуплікація й кеш оптики як завжди
+                newly_inserted = db.add_new(matched)  # спільна таблиця — дедуплікація й кеш оптики
+                if newly_inserted and config.fiber_check.enabled:
+                    _update_fiber_availability(db, newly_inserted, config.http.request_delay_seconds)
 
             new_for_profile = db.new_for_profile(profile.id, matched)
             if new_for_profile:

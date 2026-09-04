@@ -27,6 +27,38 @@ _PLACES_URL = "https://geo-api.zimmo.be/places"
 
 _cache: Optional[list[dict]] = None
 
+# Довідник geo-api.zimmo.be знає назви лише нідерландською/французькою/
+# німецькою — українських немає. Тут невеликий власний список
+# найпоширеніших бельгійських міст, щоб "Гент" чи "Антверпен" теж
+# спрацьовували (у чаті й у формі "Розсилка" — обидва йдуть через
+# postal_codes_for_name нижче).
+_UKRAINIAN_ALIASES: dict[str, str] = {
+    "гент": "Gent",
+    "антверпен": "Antwerpen",
+    "брюссель": "Brussel",
+    "льєж": "Liège",
+    "ліеж": "Liège",
+    "льєз": "Liège",
+    "кортрейк": "Kortrijk",
+    "брюгге": "Brugge",
+    "намюр": "Namur",
+    "левен": "Leuven",
+    "льовен": "Leuven",
+    "мехелен": "Mechelen",
+    "остенде": "Oostende",
+    "шарлеруа": "Charleroi",
+    "монс": "Mons",
+    "мерксем": "Merksem",
+    "гасселт": "Hasselt",
+    "хасселт": "Hasselt",
+    "алст": "Aalst",
+    "синт-ніклас": "Sint-Niklaas",
+    "сінт-ніклас": "Sint-Niklaas",
+    "тюрнхаут": "Turnhout",
+    "вавр": "Wavre",
+    "генк": "Genk",
+}
+
 
 def load_places(
     timeout: float = 20.0, session: Optional[requests.Session] = None
@@ -100,6 +132,7 @@ def postal_codes_for_name(
     needle = text.strip().lower()
     if not needle:
         return []
+    needle = _UKRAINIAN_ALIASES.get(needle, needle).lower()
     places = load_places() if places is None else places
 
     exact: list[str] = []
