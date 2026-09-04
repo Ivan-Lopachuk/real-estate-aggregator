@@ -40,7 +40,10 @@ import logging
 from datetime import datetime, timezone
 from typing import Iterator, Optional
 
+import cloudscraper
+
 from .. import geocoding
+from ..config import HttpSettings, SearchCriteria
 from ..models import Listing
 from .base import BaseScraper, register
 
@@ -57,6 +60,21 @@ _SEGMENT_TO_TYPE = {v: k for k, v in _TYPE_TO_SEGMENT.items()}
 @register
 class ZimmoScraper(BaseScraper):
     site_name = "zimmo"
+
+    def __init__(self, criteria: SearchCriteria, http: HttpSettings) -> None:
+        super().__init__(criteria, http)
+        # Сторінка пошуку Zimmo (на відміну від Immoweb) стоїть за
+        # Cloudflare-захистом, який блокує звичайні запити requests
+        # (403 Forbidden) — навіть з "браузерним" User-Agent. cloudscraper
+        # сам розв'язує JS-виклик Cloudflare й повертає готову cookie,
+        # тож далі працює так само, як звичайна requests.Session.
+        self.session = cloudscraper.create_scraper()
+        self.session.headers.update(
+            {
+                "User-Agent": http.user_agent,
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+        )
 
     def fetch(self) -> Iterator[Listing]:
         status_segment = _TRANSACTION_TO_SEGMENT.get(self.criteria.transaction, "te-huur")
