@@ -12,17 +12,19 @@
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import time
 from datetime import datetime, timezone
 from urllib.parse import quote
 
+from . import profiles as profiles_module
 from . import proximus, webpage
 from .config import Config
 from .database import Database
 from .filters import ListingFilter
 from .models import Listing
-from .notifier import build_notifier
+from .notifier import EmailNotifier, build_notifier
 from .scrapers.base import get_scraper
 
 log = logging.getLogger(__name__)
@@ -133,6 +135,65 @@ def run_once(config: Config) -> int:
     return new_count
 
 
+def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
+    """
+    Окремий прохід — незалежний від run_once() і config.yaml -> search.
+
+    Проходить по всіх збережених профілях розсилки (profiles/*.json,
+    їх створює людина через кнопку "✉ Розсилка" на дошці — див.
+    aggregator/profiles.py й server/app.py). Для кожного профілю, кому
+    вже час (свій інтервал у годинах): шукає нові оголошення за ЙОГО
+    критеріями й шле лист на ЙОГО пошту — тим самим SMTP-акаунтом, що
+    й основні сповіщення з config.yaml, лише з іншим отримувачем.
+
+    Повертає, скільком листам за профілями зрештою пощастило піти.
+    """
+    if config.notifications.email is None:
+        log.info("розсилка за профілями: SMTP не налаштовано в config.yaml — пропускаю")
+        return 0
+
+    due = [p for p in profiles_module.load_profiles(profiles_dir) if p.is_due()]
+    if not due:
+        return 0
+    log.info("розсилка за профілями: перевіряю %d профіл(ів)", len(due))
+
+    sent_count = 0
+    with Database(config.database_path) as db:
+        for profile in due:
+            listing_filter = ListingFilter(profile.search)
+            matched: list[Listing] = []
+            for site in config.sites:
+                scraper = get_scraper(site)(profile.search, config.http)
+                try:
+                    fetched = list(scraper.fetch())
+                except Exception:
+                    log.exception("профіль %s: scraper %r впав — пропускаю сайт", profile.id, site)
+                    continue
+                matched.extend(listing_filter.apply(fetched))
+
+            if matched:
+                db.add_new(matched)  # спільна таблиця — дедуплікація й кеш оптики як завжди
+
+            new_for_profile = db.new_for_profile(profile.id, matched)
+            if new_for_profile:
+                to_notify, _duplicates = db.split_cross_site_duplicates(new_for_profile)
+                if to_notify:
+                    email_settings = dataclasses.replace(
+                        config.notifications.email, to_addresses=[profile.notify_email]
+                    )
+                    try:
+                        EmailNotifier(email_settings).notify(to_notify)
+                        sent_count += len(to_notify)
+                    except Exception:
+                        log.exception("профіль %s: не вдалося надіслати лист", profile.id)
+                        continue  # не позначаємо — спробуємо знову наступного разу
+                db.mark_notified_for_profile(profile.id, new_for_profile)
+
+            profiles_module.mark_checked(profile)
+
+    return sent_count
+
+
 def run_forever(config: Config) -> None:
     minutes = config.poll_interval_minutes
     log.info("запуск у режимі циклу: перевірка кожні %d хв", minutes)
@@ -141,5 +202,9 @@ def run_forever(config: Config) -> None:
             run_once(config)
         except Exception:
             log.exception("прохід завершився помилкою")
+        try:
+            run_profiles(config)
+        except Exception:
+            log.exception("розсилка за профілями завершилась помилкою")
         log.info("пауза %d хв до наступної перевірки", minutes)
         time.sleep(minutes * 60)

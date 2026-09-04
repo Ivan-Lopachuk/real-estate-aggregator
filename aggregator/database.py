@@ -52,6 +52,18 @@ CREATE TABLE IF NOT EXISTS listings (
     first_seen_utc   TEXT NOT NULL,
     notified         INTEGER NOT NULL DEFAULT 0
 );
+
+-- Окрема таблиця для профілів розсилки (aggregator/profiles.py):
+-- "чи вже сповіщали ЦЕЙ профіль про ЦЕ оголошення". Свідомо окремо
+-- від listings.notified (той стовпець — лише для основного
+-- сповіщення з config.yaml), бо різні профілі можуть побачити те
+-- саме оголошення в різний час і кожному з них воно все одно нове.
+CREATE TABLE IF NOT EXISTS profile_notified (
+    profile_id   TEXT NOT NULL,
+    listing_uid  TEXT NOT NULL,
+    notified_utc TEXT NOT NULL,
+    PRIMARY KEY (profile_id, listing_uid)
+);
 """
 
 # Стовпці, додані вже після першого релізу. Ключ — назва, значення — тип
@@ -168,6 +180,39 @@ class Database:
         self._conn.executemany(
             "UPDATE listings SET notified = 1 WHERE uid = ?",
             [(l.uid,) for l in listings],
+        )
+        self._conn.commit()
+
+    def new_for_profile(self, profile_id: str, listings: Iterable[Listing]) -> list[Listing]:
+        """
+        З цих оголошень — ті, про які ЩЕ не сповіщали саме цей профіль
+        розсилки (незалежно від того, чи оголошення вже є в базі
+        завдяки іншому профілю чи основному пошуку).
+        """
+        listings = list(listings)
+        if not listings:
+            return []
+        uids = [l.uid for l in listings]
+        placeholders = ",".join("?" for _ in uids)
+        rows = self._conn.execute(
+            f"""
+            SELECT listing_uid FROM profile_notified
+            WHERE profile_id = ? AND listing_uid IN ({placeholders})
+            """,
+            (profile_id, *uids),
+        ).fetchall()
+        already = {row["listing_uid"] for row in rows}
+        return [l for l in listings if l.uid not in already]
+
+    def mark_notified_for_profile(self, profile_id: str, listings: Iterable[Listing]) -> None:
+        """Позначає, що цей профіль розсилки вже бачив ці оголошення."""
+        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        self._conn.executemany(
+            """
+            INSERT OR IGNORE INTO profile_notified (profile_id, listing_uid, notified_utc)
+            VALUES (?, ?, ?)
+            """,
+            [(profile_id, l.uid, now) for l in listings],
         )
         self._conn.commit()
 
