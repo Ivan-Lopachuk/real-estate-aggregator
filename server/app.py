@@ -27,11 +27,15 @@ ACCESS_CODE. Без цього — 401. OPENROUTER_API_KEY ніколи не п�
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import json
 import logging
 import os
 import re
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -86,6 +90,16 @@ GH_REPO = os.environ.get("GH_REPO", "")
 # розсилки все одно спрацює, просто перший лист прийде за розкладом.
 GH_WORKFLOW_FILE = os.environ.get("GH_WORKFLOW_FILE", "check.yml")
 GH_BRANCH = os.environ.get("GH_BRANCH", "main")
+
+# Секрет, яким сервер підписує ВЛАСНИЙ токен входу (див. _make_session_token
+# нижче) — не плутати з GOOGLE_CLIENT_ID. Токен від Google живе лише ~годину
+# і навмисно не призначений жити довше, тож щоб людина лишалась залогіненою
+# на дошці днями, сервер після першої перевірки видає свій токен на
+# SESSION_TTL_SECONDS і далі приймає саме його. Якщо SESSION_SECRET не
+# заданий окремо — беремо ACCESS_CODE (він і так секретний і вже є в
+# налаштуваннях), а як останній запобіжник — сам GOOGLE_CLIENT_ID.
+SESSION_SECRET = os.environ.get("SESSION_SECRET") or ACCESS_CODE or GOOGLE_CLIENT_ID or "insecure-dev-secret"
+SESSION_TTL_SECONDS = 30 * 24 * 3600  # 30 днів
 
 _MIN_INTERVAL_HOURS = 1
 _MAX_INTERVAL_HOURS = 168  # тиждень
@@ -464,6 +478,40 @@ def _verify_google_token(token: str) -> Optional[dict]:
     }
 
 
+def _make_session_token(user: dict) -> str:
+    """
+    Власний "довгий" токен входу — на відміну від токена Google (живе
+    ~годину), цей підписаний нашим секретом (SESSION_SECRET) і дійсний
+    SESSION_TTL_SECONDS. Формат: base64url(payload-json).base64url(підпис).
+    """
+    payload = {
+        "sub": user["sub"],
+        "email": user["email"],
+        "name": user["name"],
+        "picture": user["picture"],
+        "exp": int(time.time()) + SESSION_TTL_SECONDS,
+    }
+    payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=")
+    signature = hmac.new(SESSION_SECRET.encode(), payload_b64, hashlib.sha256).digest()
+    signature_b64 = base64.urlsafe_b64encode(signature).rstrip(b"=")
+    return (payload_b64 + b"." + signature_b64).decode()
+
+
+def _verify_session_token(token: str) -> Optional[dict]:
+    try:
+        payload_b64, signature_b64 = token.encode().split(b".", 1)
+        expected_signature = hmac.new(SESSION_SECRET.encode(), payload_b64, hashlib.sha256).digest()
+        expected_b64 = base64.urlsafe_b64encode(expected_signature).rstrip(b"=")
+        if not hmac.compare_digest(signature_b64, expected_b64):
+            return None
+        payload = json.loads(base64.urlsafe_b64decode(payload_b64 + b"=="))
+        if payload.get("exp", 0) < time.time():
+            return None
+        return payload
+    except Exception:
+        return None
+
+
 @app.route("/api/auth/google", methods=["POST"])
 def auth_google():
     body = request.get_json(force=True, silent=True) or {}
@@ -471,15 +519,15 @@ def auth_google():
     user = _verify_google_token(token)
     if user is None:
         return jsonify({"error": "Не вдалося підтвердити вхід через Google."}), 401
-    return jsonify(user)
+    return jsonify({**user, "session_token": _make_session_token(user)})
 
 
 def _authenticated_user() -> Optional[dict]:
-    """Читає `Authorization: Bearer <google-id-token>` і перевіряє його."""
+    """Читає `Authorization: Bearer <session-token>` (виданий /api/auth/google) і перевіряє його."""
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         return None
-    return _verify_google_token(auth[len("Bearer "):].strip())
+    return _verify_session_token(auth[len("Bearer "):].strip())
 
 
 def _profile_path(google_sub: str) -> str:
