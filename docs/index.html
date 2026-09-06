@@ -695,14 +695,12 @@ function updateAuthButton() {
   }
 }
 
-// Токен від Google живе недовго (близько години) і навмисно НЕ
-// зберігається між перезавантаженнями сторінки (лише поки відкрита
-// вкладка) — дії, які його потребують (розсилка), просто попросять
-// увійти ще раз, якщо він застарів.
-var googleIdToken = null;
-
+// Токен від Google живе недовго (близько години), тож для дій, що
+// потребують входу (розсилка), браузер відправляє його на сервер один
+// раз, а сервер видає у відповідь ВЛАСНИЙ токен (session_token) на 30
+// днів — саме він зберігається в localStorage (разом з ім'ям/фото) і
+// переживає перезавантаження сторінки.
 function onGoogleCredential(response) {
-  googleIdToken = response.credential;
   fetch(AUTH_BACKEND_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -728,7 +726,6 @@ function initGoogleAuth() {
   document.getElementById("authBtn").addEventListener("click", function () {
     if (loadAuthUser()) {
       saveAuthUser(null);
-      googleIdToken = null;
       updateAuthButton();
       if (typeof google !== "undefined") google.accounts.id.disableAutoSelect();
       return;
@@ -768,15 +765,24 @@ function showSubStatus(text, isError) {
 }
 
 function subFetch(method, body) {
+  var user = loadAuthUser();
   var options = {
     method: method,
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer " + googleIdToken,
+      "Authorization": "Bearer " + (user ? user.session_token : ""),
     },
   };
   if (body) options.body = JSON.stringify(body);
-  return fetch(SUB_BACKEND_URL, options);
+  return fetch(SUB_BACKEND_URL, options).then(function (r) {
+    if (r.status === 401) {
+      // Токен таки застарів (спливло 30 днів) — просимо увійти ще раз.
+      saveAuthUser(null);
+      updateAuthButton();
+      alert("Вхід застарів — натисни кнопку \"Вхід\" вгорі ще раз, а тоді відкрий розсилку знову.");
+    }
+    return r;
+  });
 }
 
 function fillSubForm(sub) {
@@ -801,12 +807,6 @@ function openSubPanel() {
   var user = loadAuthUser();
   if (!user) {
     alert("Спочатку увійди через Google (кнопка вгорі праворуч).");
-    return;
-  }
-  if (!googleIdToken) {
-    saveAuthUser(null);
-    updateAuthButton();
-    alert("Вхід застарів — натисни кнопку \"Вхід\" вгорі ще раз, а тоді відкрий розсилку знову.");
     return;
   }
 
