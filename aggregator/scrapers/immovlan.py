@@ -304,7 +304,8 @@ class ImmovlanScraper(BaseScraper):
     @staticmethod
     def _make_title(property_type: str, bedrooms: Optional[int], locality: Optional[str]) -> str:
         bits = [property_type.title()]
-        if bedrooms is not None:
+        # 0 або відсутнє (студія / сайт не вказав) — не пишемо "0 спалень".
+        if bedrooms:
             bits.append(f"{bedrooms} спалень")
         if locality:
             bits.append(locality)

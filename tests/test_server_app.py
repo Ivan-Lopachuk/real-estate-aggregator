@@ -413,6 +413,54 @@ class SeenEndpointTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 400)
 
 
+class FavoritesEndpointTests(unittest.TestCase):
+    """/api/favorites — та сама механіка, що й /api/seen, окремий файл."""
+
+    def setUp(self):
+        self.client = chat_app.app.test_client()
+        chat_app.GH_WRITE_TOKEN = "tok"
+        chat_app.GH_REPO = "me/repo"
+        self._user_patch = patch.object(
+            chat_app, "_authenticated_user", return_value={"sub": "42", "email": "a@b.com"}
+        )
+        self._user_patch.start()
+
+    def tearDown(self):
+        self._user_patch.stop()
+
+    def test_get_returns_empty_map_when_no_file_yet(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)):
+            resp = self.client.get("/api/favorites", headers={"Authorization": "Bearer x"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json(), {"favorites": {}})
+
+    def test_post_saves_map_to_favorites_path_and_returns_it(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)), \
+             patch.object(chat_app, "write_json") as mock_write:
+            resp = self.client.post(
+                "/api/favorites", headers={"Authorization": "Bearer x"},
+                json={"favorites": {"immoweb:1": "2026-01-01T00:00:00"}},
+            )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json(), {"favorites": {"immoweb:1": "2026-01-01T00:00:00"}})
+        self.assertEqual(mock_write.call_args[0][2], "favorites/42.json")
+
+    def test_post_rejects_bad_format(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)):
+            resp = self.client.post(
+                "/api/favorites", headers={"Authorization": "Bearer x"},
+                json={"favorites": {"immoweb:1": 123}},
+            )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_get_without_auth_is_rejected(self):
+        self._user_patch.stop()
+        with patch.object(chat_app, "_authenticated_user", return_value=None):
+            resp = self.client.get("/api/favorites")
+        self.assertEqual(resp.status_code, 401)
+        self._user_patch.start()
+
+
 class SessionTokenTests(unittest.TestCase):
     """
     Токен, який сервер видає ПІСЛЯ входу через Google (30 днів) — щоб

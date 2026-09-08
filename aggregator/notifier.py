@@ -36,7 +36,7 @@ def _format_listing(l: Listing) -> str:
     lines = [f"• {l.title} — {price}"]
 
     details = []
-    if l.bedrooms is not None:
+    if l.bedrooms:  # 0 / None — сайт не вказав кількості спалень (студія тощо)
         details.append(f"{l.bedrooms} спалень")
     if l.living_area:
         details.append(f"{l.living_area:.0f} м²")

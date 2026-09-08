@@ -156,7 +156,8 @@ class ImmowebScraper(BaseScraper):
         bits: list[str] = []
         if prop.get("type"):
             bits.append(str(prop["type"]).replace("_", " ").title())
-        if prop.get("bedroomCount") is not None:
+        # 0 або відсутнє (студія / сайт не вказав) — не пишемо "0 спалень".
+        if prop.get("bedroomCount"):
             bits.append(f'{prop["bedroomCount"]} спалень')
         if location.get("locality"):
             bits.append(str(location["locality"]))

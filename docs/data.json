@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-08T20:05:47+00:00",
+ "generated_utc": "2026-09-08T20:11:13+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
@@ -22,7 +22,7 @@
    "house_number": "20",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/74c1d044-3371-40ea-9e64-5ee1bf014ad9/300x300/ab9401b5e7d99c1d72f3099b8e89888d.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-08T18:06:28+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
    "uid": "immoweb:21825148",
@@ -43,7 +43,7 @@
    "house_number": null,
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/5574070c-c209-4f5a-a9ac-6e77a3a1aeec/300x300/fa90a9933bfba511c2acc2acb1f5b730.jpg",
    "fiber_available": null,
-   "first_seen_utc": "2026-09-08T17:06:02+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
    "uid": "immoweb:21825083",
@@ -64,28 +64,7 @@
    "house_number": "43",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/6dacbb8a-6e80-427e-b492-a520671d24de/300x300/f82fa027e4d30ce835b902b9c2194364.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-08T17:06:02+00:00"
-  },
-  {
-   "uid": "immoweb:21824982",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21824982",
-   "title": "Apartment · 1 спалень · Gent",
-   "price": 790.0,
-   "price_previous": null,
-   "extra_costs": 0.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Gent",
-   "postal_code": "9000",
-   "street": "François Benardstraat",
-   "house_number": "11",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/c9dc0fc4-a914-436e-b653-fabb3d021377/300x300/c158ef4765f232f05273894800743a86.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-08T16:05:44+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
    "uid": "immoweb:21823891",
@@ -106,7 +85,7 @@
    "house_number": "40",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/28bd6921-868d-42b4-9d11-6b1eb7b8d433/300x300/6810b8b800e56de64c67682c37a6965e.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-08T12:07:07+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
    "uid": "immoweb:21820520",
@@ -127,28 +106,7 @@
    "house_number": "1",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/a3ac5b59-eae9-4819-9e66-fe0500e44bc9/300x300/b94d1abfd45b3222f25cb66c4b7eaa14.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-07T10:05:14+00:00"
-  },
-  {
-   "uid": "immoweb:21820001",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21820001",
-   "title": "Apartment · 1 спалень · AALST",
-   "price": 725.0,
-   "price_previous": null,
-   "extra_costs": 25.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 80.0,
-   "locality": "AALST",
-   "postal_code": "9300",
-   "street": "Cesar Haeltermanstraat",
-   "house_number": "12",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/375249f6-aeb3-4228-9aa4-c59522ffcb33/300x300/5ee3490768e4b46929dd6e5343d1b3a6.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-07T09:05:52+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
    "uid": "immoweb:21820065",
@@ -169,7 +127,7 @@
    "house_number": "1 F",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/ad50e9ad-4db4-4b8c-a0a8-9646920cfd31/300x300/f97e7eebcd262ce8468d86bf7cba87ed.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-07T09:05:42+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
    "uid": "immoweb:21808032",
@@ -190,448 +148,49 @@
    "house_number": "222",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/e53913fd-d5dc-4ca3-b25d-6695cae93d58/300x300/e82be7ff72ff49ff58ff17890ec629bd.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-05T08:05:17+00:00"
+   "first_seen_utc": "2026-09-08T19:33:30+00:00"
   },
   {
-   "uid": "immoweb:21817168",
+   "uid": "immoweb:21759256",
    "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21817168",
+   "url": "https://www.immoweb.be/en/classified/21759256",
    "title": "Apartment · 1 спалень · Gent",
-   "price": 650.0,
+   "price": 780.0,
    "price_previous": null,
    "extra_costs": null,
    "currency": "EUR",
    "transaction": "rent",
    "property_type": "apartment",
    "bedrooms": 1,
-   "living_area": 51.0,
+   "living_area": null,
    "locality": "Gent",
    "postal_code": "9000",
-   "street": "Grensstraat",
-   "house_number": "67",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/700e6376-9c51-4d4d-87e6-24c7ef8dcc53/300x300/bd99ad44bc562b0802ece6613751baf4.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T23:04:49+00:00"
-  },
-  {
-   "uid": "immoweb:21809238",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21809238",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 700.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 65.0,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Korte Nieuwstraat",
-   "house_number": "6",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/759f19da-fefd-4454-bdb1-2d44c9deddf0/300x300/86a84de76444f79a07b26542c8625796.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21802945",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21802945",
-   "title": "Apartment · 1 спалень · Dendermonde",
-   "price": 750.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Dendermonde",
-   "postal_code": "9200",
-   "street": "Lambroeckstraat",
-   "house_number": "27",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/835665a1-3017-4df6-8800-0f41821a567f/300x300/f3174dc0d05df4cabaf896f6e43a8f85.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21801886",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21801886",
-   "title": "Apartment · 1 спалень · SINT-NIKLAAS",
-   "price": 800.0,
-   "price_previous": null,
-   "extra_costs": 70.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 76.0,
-   "locality": "SINT-NIKLAAS",
-   "postal_code": "9100",
-   "street": "Mercatorstraat",
-   "house_number": "79 B",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/1951e200-355f-4656-9c38-16c0964bd55e/300x300/27ad5022f6c95c4c371ca3c23d84f8bf.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21798885",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21798885",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 720.0,
-   "price_previous": null,
-   "extra_costs": 40.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 56.0,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "1 Meistraat",
-   "house_number": "17",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/cd46757e-5eef-4fbd-a9f1-86390e4c784b/300x300/cf877b808a23d6d6933c8313f1551e32.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21797488",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21797488",
-   "title": "Apartment · 1 спалень · Dendermonde",
-   "price": 750.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 75.0,
-   "locality": "Dendermonde",
-   "postal_code": "9200",
-   "street": "Krijgshof",
+   "street": "Raveschootstraat",
    "house_number": "2",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/c492ee98-db3b-492c-ad29-3ccab3f861e0/300x300/9d52b8d5829e8b712a53ca354d10bb08.jpg",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/3e014c3b-685d-4e23-8df1-de86b32751de/300x300/ba535d04b48be7ce57a200442cd3611d.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
+   "first_seen_utc": "2026-09-04T12:41:46+00:00"
   },
   {
-   "uid": "immoweb:21794550",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21794550",
-   "title": "Apartment · 1 спалень · Sint-Niklaas",
-   "price": 725.0,
-   "price_previous": null,
-   "extra_costs": 50.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 55.0,
-   "locality": "Sint-Niklaas",
-   "postal_code": "9100",
-   "street": "Broodstraat",
-   "house_number": "47",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/dae2ae4b-51f0-4d01-9da9-90053799e643/300x300/42971bb8a234d1f288c8d396f001efaf.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21793621",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21793621",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 620.0,
+   "uid": "immovlan:rwc43339",
+   "site": "immovlan",
+   "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rwc43339",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 799.0,
    "price_previous": null,
    "extra_costs": null,
    "currency": "EUR",
    "transaction": "rent",
    "property_type": "apartment",
    "bedrooms": 1,
-   "living_area": null,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Kareelstraat",
-   "house_number": "32",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/c88d4506-9cd9-4c66-9c70-44733cff2f57/300x300/881096fc8e1689ffbe62ab47c6c17f20.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21792855",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21792855",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 725.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Hertshage",
-   "house_number": "77",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/f92552ee-3a69-48f9-ba34-6b5331a4fe41/300x300/66954e5b1e4ee199895eda17322eb410.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21790234",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21790234",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 650.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Arbeidstraat",
-   "house_number": "3B",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/5cca9d8c-ff84-444d-ba8e-b660e8358479/300x300/10f714627324c35052256a58a5307cd1.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21784000",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21784000",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 725.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Hertshage",
-   "house_number": "75",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/2d9a3cdc-e23c-485e-89fe-4518a11fa9a8/300x300/18d3e0481b9cbaf154b845cd77a38c5e.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21773364",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21773364",
-   "title": "Apartment · 1 спалень · DENDERMONDE",
-   "price": 690.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 69.0,
-   "locality": "DENDERMONDE",
-   "postal_code": "9200",
-   "street": "Krijgshof",
-   "house_number": "1",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/585ac1f7-037c-4632-b8c2-4d9e864a6e91/300x300/ff3fffaf6103a8a6a08155af5fe39342.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21770107",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21770107",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 650.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Hertshage",
-   "house_number": "77",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/53579395-5432-446e-8d62-3591d04af8ae/300x300/3dd7324095ab16eba20ea287f339f50e.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21757521",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21757521",
-   "title": "Apartment · 1 спалень · Dendermonde",
-   "price": 750.0,
-   "price_previous": null,
-   "extra_costs": 55.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Dendermonde",
-   "postal_code": "9200",
-   "street": "Rosstraat",
-   "house_number": "113",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/3521e59b-0cf4-46e3-8403-dab3d5cbd925/300x300/9743e543b0a55370d1567443e988ee8d.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21755930",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21755930",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 685.0,
-   "price_previous": null,
-   "extra_costs": 30.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 55.0,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Hoge Vesten",
-   "house_number": "3",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/cd12b66e-3937-4184-9d9a-a795477bb508/300x300/167b2b42f976913a3bfa99683a065f5c.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21649100",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21649100",
-   "title": "Apartment · 1 спалень · Dendermonde",
-   "price": 800.0,
-   "price_previous": null,
-   "extra_costs": 100.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 89.0,
-   "locality": "Dendermonde",
-   "postal_code": "9200",
-   "street": "Dokter Haekstraat",
-   "house_number": "24",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/bd20272d-defa-468f-9909-631d94b96bc2/300x300/2dd98c029a352be7cc2707e903bfa48b.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21731848",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21731848",
-   "title": "Apartment · 1 спалень · AALST",
-   "price": 775.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 79.0,
-   "locality": "AALST",
-   "postal_code": "9300",
-   "street": "Molenstraat",
-   "house_number": "8",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/2014bbab-2c9c-42c0-818f-3dae0dd27004/300x300/b1c5c087f3eeb6b52a1c7cc8a876de0f.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21686164",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21686164",
-   "title": "Apartment · 1 спалень · Dendermonde Schoonaarde",
-   "price": 725.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 71.0,
-   "locality": "Dendermonde Schoonaarde",
-   "postal_code": "9200",
-   "street": null,
-   "house_number": null,
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/9a24a901-8b72-491c-89fa-6f7f3c4d3251/300x300/9499ec9068a8215d6020ff43e04f3f63.jpg",
+   "living_area": 48.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Raveschootstraat",
+   "house_number": "2",
+   "photo_url": "https://api-image.immovlan.be/v1/property/RWC43339/thumbnail-webp/Medium?h=280",
    "fiber_available": null,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21687490",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21687490",
-   "title": "Apartment · 1 спалень · Aalst",
-   "price": 670.0,
-   "price_previous": null,
-   "extra_costs": null,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 60.0,
-   "locality": "Aalst",
-   "postal_code": "9300",
-   "street": "Stationsstraat",
-   "house_number": "17",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/38cdf5a6-13eb-43fd-82a0-94599eebac92/300x300/be1d4fc1571ada416ec6c03a474b98f7.jpg",
-   "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21244918",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21244918",
-   "title": "Apartment · 1 спалень · Sint-Niklaas",
-   "price": 795.0,
-   "price_previous": null,
-   "extra_costs": 100.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": 79.0,
-   "locality": "Sint-Niklaas",
-   "postal_code": "9100",
-   "street": "Knaptandstraat",
-   "house_number": "216",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/ac9a0dce-a790-42da-bbeb-281b456d70cf/300x300/6a2f670e8d2cdbd2ecbbbbab582849bd.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
-  },
-  {
-   "uid": "immoweb:21216613",
-   "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21216613",
-   "title": "Apartment · 1 спалень · Sint-Niklaas",
-   "price": 788.0,
-   "price_previous": null,
-   "extra_costs": 518.0,
-   "currency": "EUR",
-   "transaction": "rent",
-   "property_type": "apartment",
-   "bedrooms": 1,
-   "living_area": null,
-   "locality": "Sint-Niklaas",
-   "postal_code": "9100",
-   "street": "Van Havermaetstraat",
-   "house_number": "29",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/cbf9beee-8019-4119-a501-54de3eee6258/300x300/d58dff76188202fa0f7b096cc3e710e8.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:58:02+00:00"
+   "first_seen_utc": "2026-09-04T12:41:46+00:00"
   },
   {
    "uid": "immoweb:21812751",
@@ -652,7 +211,7 @@
    "house_number": "156",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/1bf9734a-f531-404a-a166-745fc07b96fb/300x300/abd76713f227f103b1c8a82f5cc81660.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21811419",
@@ -673,7 +232,7 @@
    "house_number": "74",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/c9b39a30-fd5a-4916-85a6-acf4f5ccd1ad/300x300/9d0648e615753400ba3694ee8730c5a4.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21810963",
@@ -694,7 +253,13 @@
    "house_number": "149",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/73cd4ef9-0cb4-4139-8088-9529d904b3fc/300x300/7b1637d65f7ea348b1b13905bfd4e057.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LRIVV/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21810828",
@@ -715,7 +280,34 @@
    "house_number": null,
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/1697d9e5-5f65-4537-8d76-614a56b1eac0/300x300/9e33cd5475740c2d5342b7f1598b2a23.png",
    "fiber_available": null,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
+  },
+  {
+   "uid": "immoweb:21810789",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21810789",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 750.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": null,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Tentoonstellingslaan",
+   "house_number": "102",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/ef4bd349-4c51-40f3-98b1-ea1556a39878/300x300/5d620f22b83cb84814ddbbd2e0e57011.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LR8YE/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21809067",
@@ -736,7 +328,13 @@
    "house_number": "82",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/f0f14cb5-e68c-4c09-aed0-0bd05f74f797/300x300/583a697733dec6397bd1c221b30a42f6.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LQDOJ/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21807365",
@@ -757,7 +355,13 @@
    "house_number": "2",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/2984f131-6bea-45bb-a56d-29c210e3d280/300x300/ef0e8f650bcd88cf64e7cc0d3a9e40bd.jpg",
    "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/huis/KVBPH/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21807186",
@@ -778,7 +382,7 @@
    "house_number": null,
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/0850bc09-b180-4e5e-911f-23c697b00b0a/300x300/c864498d458992540daa2d932fd2be19.jpg",
    "fiber_available": null,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21752521",
@@ -799,7 +403,13 @@
    "house_number": "17",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/39586d07-64cb-440c-a686-42a55d8d2aa0/300x300/b8a755844998a5b75ba63bb5cdda78b2.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LQV59/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21804305",
@@ -820,7 +430,7 @@
    "house_number": "129",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/0fe00aa5-c62b-4eb4-81db-13b7eb305848/300x300/7c89f20929a2f6ca651e14676d34c7f0.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21802314",
@@ -841,7 +451,7 @@
    "house_number": "161",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/385bfeae-2da0-4280-9373-3d51a286e187/300x300/82bb19b191e42e420a53f81286f222d8.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21802233",
@@ -862,7 +472,17 @@
    "house_number": "1f",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/0a8bedf8-1cb4-4eac-ba27-883f3a2bbf54/300x300/9bf866131c810d0dcd2322044e54b7e3.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/appartement/LRFK8/"
+    },
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/appartement/LF63H/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21799395",
@@ -883,7 +503,7 @@
    "house_number": "6",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/a8ec4302-218a-4cde-9508-24c6bdfe7ae1/300x300/3922352244673c21454b8ccd9944676c.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21794959",
@@ -904,7 +524,7 @@
    "house_number": "241 2",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/7d0f67e3-9bc7-4799-8b08-68281fa9a8a3/300x300/d1b9c229c53bcd2932bd8c4129110e2c.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21794228",
@@ -925,7 +545,7 @@
    "house_number": "43",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/8887ef2f-c90c-4f3a-8bf9-f8b5c009eead/300x300/794221071be39624e24e2d390ddd2874.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21791753",
@@ -946,7 +566,7 @@
    "house_number": "15",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/89ce0550-cc95-4c90-b2bf-9e5adf8941f2/300x300/ebf43c1ae9b3d741be241f261b67df2f.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21789960",
@@ -967,7 +587,7 @@
    "house_number": "3/303",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/cead7b66-6596-48e6-b601-ebe599683af4/300x300/53fb0282aff8e9338527207b5d816019.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21789165",
@@ -988,7 +608,13 @@
    "house_number": "119",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/187b89ea-6b5c-44c9-a51e-1ae9419460d2/300x300/e41a7b9a2f65414b064a6330cf1f27bb.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LR8PP/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21788657",
@@ -1009,7 +635,7 @@
    "house_number": "64",
    "photo_url": null,
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21788655",
@@ -1030,7 +656,7 @@
    "house_number": "64",
    "photo_url": null,
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21787683",
@@ -1051,7 +677,86 @@
    "house_number": "78 d",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/97c2bf73-e6a8-4bf5-945b-f8fb75771819/300x300/ec08c9cacd917df73eb5254216de543a.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
+  },
+  {
+   "uid": "immoweb:21785961",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21785961",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 625.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": null,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Lange Boomgaardstraat",
+   "house_number": "1",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/0fac41f1-cfe3-44af-9d77-b0e6c859c5b7/300x300/e90dddfc475a11f7d3f478b1898c8362.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LR7EG/"
+    }
+   ]
+  },
+  {
+   "uid": "immoweb:21785863",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21785863",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 750.0,
+   "price_previous": null,
+   "extra_costs": 75.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 48.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Hofstraat",
+   "house_number": "217",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/efd44074-1078-4618-84f6-62c58cbad6f1/300x300/6077265c72f6a009311dc2170bc1eecb.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
+  },
+  {
+   "uid": "immoweb:21765399",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21765399",
+   "title": "Apartment · 1 спалень · KORTRIJK",
+   "price": 670.0,
+   "price_previous": null,
+   "extra_costs": 50.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 59.0,
+   "locality": "KORTRIJK",
+   "postal_code": "8500",
+   "street": "Koning Leopold I-straat",
+   "house_number": "8",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/2df7c819-9253-4342-bc34-13fc3a0d2f92/300x300/a08c8fa5935a4daab01f34759af64dcb.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/ground-floor/for-rent/8500/kortrijk/rbw30065"
+    },
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/appartement/LONCI/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21780110",
@@ -1072,7 +777,13 @@
    "house_number": "36",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/ce3acb8a-1d86-4659-898b-e7015614e164/300x300/f9d5d2a16da87cab8e76d4e951dbedf4.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LR5BU/"
+    }
+   ]
   },
   {
    "uid": "immoweb:21779209",
@@ -1093,7 +804,7 @@
    "house_number": "1b",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/3796d8c8-6848-4222-98e8-1472b22a4554/300x300/52a5263fd3abcea6877dfb31de3bbfcd.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21777514",
@@ -1113,8 +824,8 @@
    "street": "Karel Van Hulthemstraat",
    "house_number": "116",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/3679e3c4-8fec-46f7-bb1f-24f0360b8a8c/300x300/1bc460aa49f3dce107e847b0a8f3c9bf.jpg",
-   "fiber_available": false,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21773625",
@@ -1135,11 +846,15 @@
    "house_number": "20",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/16ed6b91-b681-457a-92c6-8d84ee731e63/300x300/1f7cf777a99cb8a7235786c6c5b754f3.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00",
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
    "also_on": [
     {
      "site": "immovlan",
      "url": "https://immovlan.be/en/detail/apartment/for-rent/8500/kortrijk/rbw71437"
+    },
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/appartement/LR372/"
     }
    ]
   },
@@ -1162,7 +877,7 @@
    "house_number": "4",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/4da5442c-af18-4727-9262-199a3149e698/300x300/72e97cc2829cbab65608d4251656642a.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00",
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
    "also_on": [
     {
      "site": "immovlan",
@@ -1171,6 +886,41 @@
     {
      "site": "immovlan",
      "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rwc43116"
+    },
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LQ4ZD/"
+    }
+   ]
+  },
+  {
+   "uid": "immoweb:21769354",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21769354",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 790.0,
+   "price_previous": null,
+   "extra_costs": 80.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 61.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Voskenslaan",
+   "house_number": "449",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/5303c496-5cf2-41bc-8fde-5ca713032768/300x300/2361f3f3396ca91fe8e0ce45e3f51cae.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00",
+   "also_on": [
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LE2EG/"
+    },
+    {
+     "site": "zimmo",
+     "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LQR6N/"
     }
    ]
   },
@@ -1193,7 +943,7 @@
    "house_number": "244",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/0f840e57-a3dc-44a4-acfa-038c00396aa0/300x300/9c7b1cf44b604ec04dd95b755f955250.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21766262",
@@ -1214,7 +964,7 @@
    "house_number": "11",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/2f3b1ecf-1465-4374-8ee3-a3a3d8b789db/300x300/c158ef4765f232f05273894800743a86.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21763217",
@@ -1235,7 +985,7 @@
    "house_number": "74",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/fd147c9a-8d56-4a17-a353-8f1c7a9cf70f/300x300/f3a29c3deee5efebe2d052715d3a0fa4.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21760188",
@@ -1256,28 +1006,28 @@
    "house_number": "11",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/a904b098-0134-42d6-8052-009c73d91349/300x300/c7e6dcafa59496da8b2442203c3f5805.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
-   "uid": "immoweb:21759256",
+   "uid": "immoweb:21728003",
    "site": "immoweb",
-   "url": "https://www.immoweb.be/en/classified/21759256",
-   "title": "Apartment · 1 спалень · Gent",
-   "price": 780.0,
+   "url": "https://www.immoweb.be/en/classified/21728003",
+   "title": "Apartment · 1 спалень · GENT",
+   "price": 675.0,
    "price_previous": null,
-   "extra_costs": null,
+   "extra_costs": 75.0,
    "currency": "EUR",
    "transaction": "rent",
    "property_type": "apartment",
    "bedrooms": 1,
-   "living_area": null,
-   "locality": "Gent",
+   "living_area": 40.0,
+   "locality": "GENT",
    "postal_code": "9000",
-   "street": "Raveschootstraat",
-   "house_number": "2",
-   "photo_url": "https://media-resize.immowebstatic.be/classifieds/3e014c3b-685d-4e23-8df1-de86b32751de/300x300/ba535d04b48be7ce57a200442cd3611d.jpg",
+   "street": "Woeringenstraat",
+   "house_number": "11",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/afec93f9-6995-447b-9e22-3c2896b6d3e3/300x300/7cac295df97aa4c3c19923dece89ed9b.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21719738",
@@ -1298,7 +1048,7 @@
    "house_number": "8",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/3fa10d36-5172-46ee-94fd-40dcd2ecb6a6/300x300/4d4a2d5c78a8ef9a52972db6e55378b2.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:21706706",
@@ -1319,7 +1069,7 @@
    "house_number": "100",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/94758a62-a108-4546-a596-31f2da2da83d/300x300/0fca1deae82792d337fbd5bd8a1b9475.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
    "uid": "immoweb:9959122",
@@ -1340,28 +1090,70 @@
    "house_number": "9",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/35ad740c-1b67-5bd4-9dbf-a27d22854c36/300x300/d6d55be8183bf09eccb9e45fdb4b10a8.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   },
   {
-   "uid": "immovlan:rwc43339",
-   "site": "immovlan",
-   "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rwc43339",
-   "title": "Apartment · 1 спалень · Gent",
-   "price": 779.0,
+   "uid": "zimmo:LQYWL",
+   "site": "zimmo",
+   "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/appartement/LQYWL/",
+   "title": "Appartement · 1 спалень · Kortrijk",
+   "price": 725.0,
    "price_previous": null,
    "extra_costs": null,
    "currency": "EUR",
    "transaction": "rent",
    "property_type": "apartment",
    "bedrooms": 1,
-   "living_area": 48.0,
+   "living_area": 62.0,
+   "locality": "Kortrijk",
+   "postal_code": "8500",
+   "street": "Burgemeester Nolfstraat",
+   "house_number": "19",
+   "photo_url": "https://files.zimmo.be/backend-api/KiVF_nnmt4a5Ts_qQkJXiUkSsCE=/828x618/filters:image-format(pjpg)/-/real-estate/customers/b52153be-4bae-11e9-922b-005056b768a1/dealers/1cc4502e-ca50-4ac2-b1df-3fd7b9b463e5/listings/122476c9-877f-4d41-b001-b7e8a151d2d8/images/019ffb44-585b-7146-89c5-2c0c5abdf669",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
+  },
+  {
+   "uid": "zimmo:LBLAJ",
+   "site": "zimmo",
+   "url": "https://www.zimmo.be/nl/kortrijk-8500/te-huur/appartement/LBLAJ/",
+   "title": "Appartement · 1 спалень · KORTRIJK",
+   "price": 620.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 50.0,
+   "locality": "KORTRIJK",
+   "postal_code": "8500",
+   "street": "Burgemeester Nolfstraat",
+   "house_number": "9",
+   "photo_url": "https://files.zimmo.be/backend-api/-Plg06aHDAs71ukKuA_glHkf0k8=/828x618/filters:image-format(pjpg)/-/real-estate/customers/b4d68670-4bae-11e9-922b-005056b768a1/dealers/3fa94ecf-a511-4711-bb0b-6d4a35426936/listings/3705f8bc-d29a-4522-8822-8d8841324037/images/01a03dd2-3009-7926-816b-5c22a22854ec",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
+  },
+  {
+   "uid": "zimmo:LR993",
+   "site": "zimmo",
+   "url": "https://www.zimmo.be/nl/gent-9000/te-huur/appartement/LR993/",
+   "title": "Appartement · 1 спалень · Gent",
+   "price": 620.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": null,
    "locality": "Gent",
    "postal_code": "9000",
-   "street": "Raveschootstraat",
-   "house_number": "2",
-   "photo_url": "https://api-image.immovlan.be/v1/property/RWC43339/thumbnail-webp/Medium?h=280",
+   "street": "Martelaarslaan",
+   "house_number": null,
+   "photo_url": "https://files.zimmo.be/backend-api/NBAMeH_UzQJhIVe-wCJyh2zBW50=/828x618/filters:image-format(pjpg)/-/real-estate/customers/99999999-9999-9999-9999-999999999999/dealers/4287ff8b-b789-11e9-8ee8-005056b768a1/listings/01a03c94-aad2-7342-ba5e-5e377232869f/images/01a04e98-9d5c-7544-80c1-f4560f10d335",
    "fiber_available": null,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-03T13:49:48+00:00"
   }
  ]
 }
