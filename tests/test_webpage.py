@@ -15,7 +15,8 @@ from aggregator.webpage import _build_listings
 def row(uid, site="immoweb", duplicate_of=None, **extra):
     base = {
         "uid": uid, "site": site, "url": f"https://example.com/{uid}",
-        "title": uid, "price": 700, "currency": "EUR", "transaction_kind": "rent",
+        "title": uid, "price": 700, "price_previous": None, "extra_costs": None,
+        "currency": "EUR", "transaction_kind": "rent",
         "property_type": "apartment", "bedrooms": 1, "living_area": 40,
         "locality": "Gent", "postal_code": "9000", "street": "Kerkstraat",
         "house_number": "1", "photo_url": None, "fiber_available": None,
@@ -51,6 +52,15 @@ class BuildListingsTests(unittest.TestCase):
     def test_duplicate_without_its_original_in_range_is_dropped_quietly(self):
         rows = [row("b", site="zimmo", duplicate_of="missing")]
         self.assertEqual(_build_listings(rows), [])
+
+    def test_price_previous_is_passed_through(self):
+        listings = _build_listings([row("a", price_previous=800)])
+        self.assertEqual(listings[0]["price_previous"], 800)
+
+    def test_street_and_house_number_passed_through_for_map_link(self):
+        listings = _build_listings([row("a", street="Veldstraat", house_number="12")])
+        self.assertEqual(listings[0]["street"], "Veldstraat")
+        self.assertEqual(listings[0]["house_number"], "12")
 
 
 if __name__ == "__main__":

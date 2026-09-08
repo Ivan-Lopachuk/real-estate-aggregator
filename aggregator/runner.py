@@ -120,6 +120,10 @@ def run_once(config: Config) -> int:
     new_count = 0
     with Database(config.database_path) as db:
         if matched:
+            price_changes = db.update_prices(matched)
+            if price_changes:
+                log.info("зміна ціни виявлена в %d оголошень", len(price_changes))
+
             batch_since = datetime.now(timezone.utc).isoformat(timespec="seconds")
             new_listings = db.add_new(matched)
             if new_listings:
@@ -200,6 +204,7 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                 matched.extend(kept)
 
             if matched:
+                db.update_prices(matched)
                 newly_inserted = db.add_new(matched)  # спільна таблиця — дедуплікація й кеш оптики
                 if newly_inserted and config.fiber_check.enabled:
                     _update_fiber_availability(db, newly_inserted, config.http.request_delay_seconds)

@@ -33,6 +33,7 @@ def _row_to_dict(row) -> dict:
         "url": row["url"],
         "title": row["title"],
         "price": row["price"],
+        "price_previous": row["price_previous"],
         "extra_costs": row["extra_costs"],
         "currency": row["currency"],
         "transaction": row["transaction_kind"],
@@ -56,6 +57,10 @@ def _build_listings(rows) -> list[dict]:
     стають окремими картками: замість цього їхнє посилання додається до
     оригіналу в поле `also_on`, щоб на дошці була одна картка, а не дві
     однакові.
+
+    Поля `street` / `house_number` кожної картки використовує сама
+    сторінка (`docs/index.html`) — з них вона будує кнопку «📍 На карті»,
+    що веде в Google Maps на точну адресу квартири.
     """
     listings = [_row_to_dict(r) for r in rows if not r["duplicate_of"]]
     by_uid = {l["uid"]: l for l in listings}
@@ -77,6 +82,7 @@ def write_data(db: Database, settings: WebpageSettings, search_summary: str) -> 
     out_dir.mkdir(parents=True, exist_ok=True)
 
     rows = db.recent_listings(days=_RECENT_DAYS)
+
     payload = {
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "search_summary": search_summary,

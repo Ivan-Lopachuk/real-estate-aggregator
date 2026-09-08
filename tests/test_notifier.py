@@ -1,9 +1,13 @@
 """Тести для aggregator/notifier.py (лише формування тексту, без SMTP)."""
 
 import unittest
+from unittest.mock import Mock, patch
 
+from aggregator.config import TelegramSettings
 from aggregator.models import Listing
-from aggregator.notifier import _format_listing, build_body, build_short_body, build_short_html
+from aggregator.notifier import (
+    TelegramNotifier, _format_listing, build_body, build_short_body, build_short_html,
+)
 
 
 def make_listing(n: int) -> Listing:
@@ -67,6 +71,32 @@ class FormatListingExtraCostsTests(unittest.TestCase):
         l = Listing(site="immoweb", site_listing_id="1", url="https://example.com/1",
                      title="Apartment", price=750)
         self.assertNotIn("+", _format_listing(l))
+
+
+class TelegramNotifierTests(unittest.TestCase):
+    def test_posts_to_telegram_api_with_chat_id_and_text(self):
+        settings = TelegramSettings(chat_id="42")
+        fake_response = Mock(ok=True)
+        fake_response.raise_for_status = Mock()
+        with patch.dict("os.environ", {"AGGREGATOR_TELEGRAM_BOT_TOKEN": "123:abc"}), \
+             patch("aggregator.notifier.requests.post", return_value=fake_response) as mock_post:
+            TelegramNotifier(settings, "https://example.github.io/board/").notify(
+                [make_listing(1), make_listing(2)]
+            )
+        mock_post.assert_called_once()
+        url = mock_post.call_args[0][0]
+        payload = mock_post.call_args[1]["json"]
+        self.assertEqual(url, "https://api.telegram.org/bot123:abc/sendMessage")
+        self.assertEqual(payload["chat_id"], "42")
+        self.assertIn("2", payload["text"])
+        self.assertIn("https://example.github.io/board/", payload["text"])
+
+    def test_missing_bot_token_raises_config_error(self):
+        from aggregator.config import ConfigError
+
+        settings = TelegramSettings(chat_id="42", bot_token_env="MISSING_VAR")
+        with self.assertRaises(ConfigError):
+            TelegramNotifier(settings).notify([make_listing(1)])
 
 
 if __name__ == "__main__":

@@ -348,5 +348,100 @@ class ValidateSubscriptionBodyTests(unittest.TestCase):
         self.assertIn("Атлантида", error)
 
 
+class SeenEndpointTests(unittest.TestCase):
+    """
+    /api/seen — синхронізація позначок "переглянуто" між пристроями для
+    залогінених через Google акаунтів. Авторизація тут та сама, що й у
+    розсилки (Bearer <session_token>, див. _authenticated_user) —
+    мокаємо саме її, щоб не чіпати справжню перевірку підпису Google.
+    """
+
+    def setUp(self):
+        self.client = chat_app.app.test_client()
+        chat_app.GH_WRITE_TOKEN = "tok"
+        chat_app.GH_REPO = "me/repo"
+        self._user_patch = patch.object(
+            chat_app, "_authenticated_user", return_value={"sub": "42", "email": "a@b.com"}
+        )
+        self._user_patch.start()
+
+    def tearDown(self):
+        self._user_patch.stop()
+
+    def test_get_returns_empty_map_when_no_file_yet(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)):
+            resp = self.client.get("/api/seen", headers={"Authorization": "Bearer x"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json(), {"seen": {}})
+
+    def test_get_returns_existing_map(self):
+        with patch.object(chat_app, "read_json", return_value=({"immoweb:1": "2026-01-01T00:00:00"}, "sha1")):
+            resp = self.client.get("/api/seen", headers={"Authorization": "Bearer x"})
+        self.assertEqual(resp.get_json(), {"seen": {"immoweb:1": "2026-01-01T00:00:00"}})
+
+    def test_get_without_auth_is_rejected(self):
+        self._user_patch.stop()
+        with patch.object(chat_app, "_authenticated_user", return_value=None):
+            resp = self.client.get("/api/seen")
+        self.assertEqual(resp.status_code, 401)
+        self._user_patch.start()
+
+    def test_post_saves_map_and_returns_it(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)), \
+             patch.object(chat_app, "write_json") as mock_write:
+            resp = self.client.post(
+                "/api/seen", headers={"Authorization": "Bearer x"},
+                json={"seen": {"immoweb:1": "2026-01-01T00:00:00"}},
+            )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json(), {"seen": {"immoweb:1": "2026-01-01T00:00:00"}})
+        mock_write.assert_called_once()
+        self.assertEqual(mock_write.call_args[0][2], "seen/42.json")
+
+    def test_post_rejects_non_dict_body(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)):
+            resp = self.client.post(
+                "/api/seen", headers={"Authorization": "Bearer x"}, json={"seen": ["not", "a", "map"]}
+            )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_post_rejects_non_string_values(self):
+        with patch.object(chat_app, "read_json", return_value=(None, None)):
+            resp = self.client.post(
+                "/api/seen", headers={"Authorization": "Bearer x"}, json={"seen": {"immoweb:1": 12345}}
+            )
+        self.assertEqual(resp.status_code, 400)
+
+
+class SessionTokenTests(unittest.TestCase):
+    """
+    Токен, який сервер видає ПІСЛЯ входу через Google (30 днів) — щоб
+    людина не мусила заходити знову при кожному оновленні дошки. Не
+    плутати з самим токеном Google, який живе лише ~годину.
+    """
+
+    def _user(self):
+        return {"sub": "1", "email": "a@b.com", "name": "A", "picture": "http://pic"}
+
+    def test_round_trip(self):
+        token = chat_app._make_session_token(self._user())
+        payload = chat_app._verify_session_token(token)
+        self.assertEqual(payload["sub"], "1")
+        self.assertEqual(payload["email"], "a@b.com")
+
+    def test_tampered_token_is_rejected(self):
+        token = chat_app._make_session_token(self._user())
+        tampered = token[:-1] + ("a" if token[-1] != "a" else "b")
+        self.assertIsNone(chat_app._verify_session_token(tampered))
+
+    def test_expired_token_is_rejected(self):
+        with patch.object(chat_app, "SESSION_TTL_SECONDS", -10):
+            token = chat_app._make_session_token(self._user())
+        self.assertIsNone(chat_app._verify_session_token(token))
+
+    def test_garbage_token_is_rejected(self):
+        self.assertIsNone(chat_app._verify_session_token("not-a-real-token"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -19,7 +19,9 @@ from abc import ABC, abstractmethod
 from email.message import EmailMessage
 from typing import Sequence
 
-from .config import EmailSettings, NotificationSettings
+import requests
+
+from .config import EmailSettings, NotificationSettings, TelegramSettings, parse_notification_methods
 from .models import Listing
 
 log = logging.getLogger(__name__)
@@ -146,6 +148,31 @@ class EmailNotifier(Notifier):
         log.info("email надіслано на %s", ", ".join(self.s.to_addresses))
 
 
+class TelegramNotifier(Notifier):
+    """
+    Сповіщення в Telegram через власного бота (створюється безкоштовно
+    через @BotFather — див. README.md, розділ «Telegram-сповіщення»).
+    Формат тексту — той самий короткий варіант, що й у листі: кількість
+    і посилання на дошку (якщо вона увімкнена), без потреби ще раз
+    перелічувати самі оголошення.
+    """
+    _API_URL = "https://api.telegram.org/bot{token}/sendMessage"
+
+    def __init__(self, settings: TelegramSettings, page_url: str = "") -> None:
+        self.s = settings
+        self.page_url = page_url
+
+    def notify(self, listings: Sequence[Listing]) -> None:
+        text = build_short_body(listings, self.page_url)
+        resp = requests.post(
+            self._API_URL.format(token=self.s.bot_token),
+            json={"chat_id": self.s.chat_id, "text": text, "disable_web_page_preview": True},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        log.info("telegram-сповіщення надіслано в чат %s", self.s.chat_id)
+
+
 class MultiNotifier(Notifier):
     def __init__(self, notifiers: Sequence[Notifier]) -> None:
         self.notifiers = list(notifiers)
@@ -160,14 +187,17 @@ class MultiNotifier(Notifier):
 
 
 def build_notifier(settings: NotificationSettings, page_url: str = "") -> Notifier:
-    """Створює потрібний Notifier за налаштуваннями."""
-    method = settings.method.lower()
+    """Створює потрібний Notifier (чи їх комбінацію) за налаштуваннями."""
+    methods = parse_notification_methods(settings.method)
     chosen: list[Notifier] = []
-    if method in ("console", "both"):
+    if "console" in methods:
         chosen.append(ConsoleNotifier(page_url))
-    if method in ("email", "both"):
+    if "email" in methods:
         assert settings.email is not None  # перевірено ще в Config.load()
         chosen.append(EmailNotifier(settings.email, page_url))
+    if "telegram" in methods:
+        assert settings.telegram is not None  # перевірено ще в Config.load()
+        chosen.append(TelegramNotifier(settings.telegram, page_url))
 
     if not chosen:
         raise ValueError(f"Невідомий notifications.method: {settings.method!r}")

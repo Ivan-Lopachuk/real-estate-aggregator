@@ -170,6 +170,18 @@
   /* button{} вище задає свій display: inline-flex, і без цього рядка
      hidden-кнопки (напр. subCancelBtn) не ховались би насправді. */
   button[hidden] { display: none; }
+  select.bar-select {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    padding: 6px 12px; border-radius: 999px;
+  }
+
+  /* Кнопка «📍 На карті» на картці — вигляд «другорядної» дії поруч із
+     синьою кнопкою «Відкрити на …». */
+  .actions a.map-link {
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+  }
+  .actions a.map-link:hover { border-color: var(--accent); color: var(--accent); }
 
   .card {
     display: flex; align-items: stretch;
@@ -205,6 +217,9 @@
   .card.seen .badge { display: none; }
   .badge.fiber { background: var(--fiber-bg); color: var(--fiber-fg); }
   .card.seen .badge.fiber { display: inline-block; opacity: .7; }
+  .badge.price-down { background: var(--new-bg); color: var(--new-fg); }
+  .badge.price-up { background: rgba(220,38,38,.12); color: #dc2626; }
+  .card.seen .badge.price-down, .card.seen .badge.price-up { display: inline-block; opacity: .7; }
   .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .actions a {
     text-decoration: none; background: var(--accent); color: #fff;
@@ -344,6 +359,11 @@
       <button id="filterBtn">Тільки непереглянуті</button>
       <button id="markAllBtn">Позначити всі переглянутими</button>
       <button id="resetSeenBtn">↺ Скинути переглянуте</button>
+      <select id="sortSelect" class="bar-select">
+        <option value="date">Спочатку нові</option>
+        <option value="price_asc">Дешевші спочатку</option>
+        <option value="price_desc">Дорожчі спочатку</option>
+      </select>
     </div>
   </div>
 
@@ -362,6 +382,7 @@
 var STORE_KEY = "reab:opened";        // { uid: ISO-час коли позначено }
 var DATA = null;
 var onlyUnseen = false;
+var sortBy = "date";                  // "date" | "price_asc" | "price_desc"
 // Якщо дошку відкрито за посиланням з листа, показуємо лише
 // оголошення саме з цього листа, а не всю історію. Переглянуті серед
 // них лишаються видимими, просто сіріють. Два варіанти позначки:
@@ -388,6 +409,7 @@ function loadOpened() {
 }
 function saveOpened(map) {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(map)); } catch (e) {}
+  scheduleSeenSync();
 }
 function isSeen(uid) { return Object.prototype.hasOwnProperty.call(loadOpened(), uid); }
 function setSeen(uid, seen) {
@@ -475,6 +497,13 @@ function buildCard(l, onChange) {
     fiber.textContent = "⚡ оптика Proximus";
     title.appendChild(fiber);
   }
+  if (l.price_previous != null && l.price != null && l.price_previous !== l.price) {
+    var dropped = l.price < l.price_previous;
+    var priceBadge = document.createElement("span");
+    priceBadge.className = "badge " + (dropped ? "price-down" : "price-up");
+    priceBadge.textContent = (dropped ? "⬇ було " : "⬆ було ") + fmtPrice(l.price_previous, l.currency);
+    title.appendChild(priceBadge);
+  }
   var price = document.createElement("div");
   price.className = "price";
   price.textContent = fmtPrice(l.price, l.currency, l.extra_costs);
@@ -516,6 +545,12 @@ function buildCard(l, onChange) {
     setSeen(l.uid, true);
     if (onChange) setTimeout(onChange, 50);
   });
+
+  // Кнопка «📍 На карті» — відкриває Google Maps у новій вкладці. Якщо
+  // сайт дав вулицю й номер (так у ~95% оголошень Immoweb) — показує
+  // точну адресу; якщо ні — просто місто за поштовим індексом.
+  var mapLink = buildMapLink(l);
+
   var toggle = document.createElement("button");
   toggle.textContent = seen ? "Повернути в нові" : "Позначити переглянутим";
   toggle.addEventListener("click", function () {
@@ -523,6 +558,7 @@ function buildCard(l, onChange) {
     if (onChange) onChange();
   });
   actions.appendChild(open);
+  if (mapLink) actions.appendChild(mapLink);
   actions.appendChild(toggle);
 
   body.appendChild(top);
@@ -555,6 +591,7 @@ function render() {
   var items = base.filter(function (l) {
     return onlyUnseen ? !isSeen(l.uid) : true;
   });
+  items = sortItems(items, sortBy);
 
   bar.hidden = mode === "empty";
   if (mode !== "empty") {
@@ -586,6 +623,49 @@ function render() {
   items.forEach(function (l) {
     list.appendChild(buildCard(l, render));
   });
+}
+
+function sortItems(items, by) {
+  // Оголошення без ціни завжди лишаються в кінці списку — незалежно
+  // від напрямку сортування, «ціна не вказана» не можна порівняти.
+  var withPrice = items.filter(function (l) { return l.price != null; });
+  var withoutPrice = items.filter(function (l) { return l.price == null; });
+  if (by === "price_asc") {
+    withPrice.sort(function (a, b) { return a.price - b.price; });
+    return withPrice.concat(withoutPrice);
+  }
+  if (by === "price_desc") {
+    withPrice.sort(function (a, b) { return b.price - a.price; });
+    return withPrice.concat(withoutPrice);
+  }
+  return items; // "date" — порядок як прийшов (найновіші спочатку)
+}
+
+// ---------- Кнопка «На карті» ----------------------------------------
+
+// Замість власної мапи на сторінці — на кожній картці кнопка, що
+// відкриває Google Maps на місці квартири. Точну адресу (вулиця +
+// номер) Immoweb дає майже завжди; коли її немає — показуємо місто за
+// поштовим індексом. Повертає null лише якщо в оголошенні взагалі немає
+// ні адреси, ні міста, ні індексу (кнопку тоді просто не показуємо).
+function buildMapLink(l) {
+  var street = [l.street, l.house_number].filter(Boolean).join(" ");
+  var place = [l.postal_code, l.locality].filter(Boolean).join(" ");
+  var parts = [street, place].filter(Boolean);
+  if (!parts.length) return null;
+  parts.push("Belgium");
+
+  var a = document.createElement("a");
+  a.className = "map-link";
+  a.href = "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(parts.join(", "));
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.textContent = street ? "📍 На карті" : "📍 Місто на карті";
+  a.title = street
+    ? "Показати точну адресу в Google Maps"
+    : "Точної адреси в оголошенні немає — показати місто в Google Maps";
+  return a;
 }
 
 var SUGGESTIONS = [
@@ -713,6 +793,7 @@ function onGoogleCredential(response) {
     .then(function (user) {
       saveAuthUser(user);
       updateAuthButton();
+      syncSeenFromServer();
     })
     .catch(function () {
       // Не вдалось підтвердити вхід на сервері — просто лишаємось
@@ -900,6 +981,47 @@ var AUTH_BACKEND_URL = CHAT_BACKEND_URL.replace("/api/chat", "/api/auth/google")
 // І та сама розсилка — /api/subscription поруч із /api/chat.
 var SUB_BACKEND_URL = CHAT_BACKEND_URL.replace("/api/chat", "/api/subscription");
 
+// І синхронізація позначок "переглянуто" між пристроями — /api/seen.
+var SEEN_BACKEND_URL = CHAT_BACKEND_URL.replace("/api/chat", "/api/seen");
+var seenSyncTimer = null;
+
+// Надсилає ПОВНУ поточну мапу "переглянуто" на сервер — з невеликою
+// затримкою (debounce) після останньої зміни, щоб десяток кліків
+// підряд не робив десяток окремих запитів (кожен запис на сервері — це
+// окремий коміт у репозиторій). Нічого не робить, якщо не залогінені —
+// тоді позначки лишаються лише в цьому браузері, як і раніше.
+function scheduleSeenSync() {
+  var user = loadAuthUser();
+  if (!user || !user.session_token) return;
+  if (seenSyncTimer) clearTimeout(seenSyncTimer);
+  seenSyncTimer = setTimeout(function () {
+    fetch(SEEN_BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + user.session_token },
+      body: JSON.stringify({ seen: loadOpened() }),
+    }).catch(function () { /* фонова синхронізація — тиха невдача, спробуємо наступного разу */ });
+  }, 3000);
+}
+
+// Викликається при вході та при кожному відкритті сторінки, якщо вже
+// залогінені: об'єднує позначки з сервера (з іншого пристрою) з тими,
+// що вже є в цьому браузері, і надсилає об'єднаний результат назад —
+// так жоден пристрій нічого не втрачає.
+function syncSeenFromServer() {
+  var user = loadAuthUser();
+  if (!user || !user.session_token) return;
+  fetch(SEEN_BACKEND_URL, {
+    headers: { "Authorization": "Bearer " + user.session_token },
+  })
+    .then(function (r) { return r.ok ? r.json() : { seen: {} }; })
+    .then(function (data) {
+      var merged = Object.assign({}, data.seen || {}, loadOpened());
+      saveOpened(merged); // це саме й запланує зворотну відправку на сервер (scheduleSeenSync)
+      render();
+    })
+    .catch(function () { /* нема інтернету/сервер спить — просто лишаємось із локальними позначками */ });
+}
+
 var CHAT_CODE_KEY = "reab:chat-access-code";
 var chatHistory = [];
 
@@ -999,7 +1121,12 @@ function init(data) {
     saveOpened({});
     render();
   });
+  document.getElementById("sortSelect").addEventListener("change", function () {
+    sortBy = this.value;
+    render();
+  });
 
+  syncSeenFromServer();
   render();
 }
 

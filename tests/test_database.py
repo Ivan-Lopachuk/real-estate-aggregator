@@ -178,5 +178,83 @@ class FiberStatusTests(unittest.TestCase):
             self.assertEqual(db.known_fiber_status("Kerkstraat", "1", "9000"), (True, "FTTHBF"))
 
 
+class PriceHistoryTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = Path(self.tmp.name) / "test.db"
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_price_drop_is_recorded(self):
+        with Database(self.path) as db:
+            db.add_new([listing(1, price=800)])
+            changed = db.update_prices([listing(1, price=700)])
+            self.assertEqual(changed, [("immoweb:1", 800, 700)])
+
+            row = db._conn.execute(
+                "SELECT price, price_previous FROM listings WHERE uid = ?", ("immoweb:1",)
+            ).fetchone()
+            self.assertEqual(row["price"], 700)
+            self.assertEqual(row["price_previous"], 800)
+
+    def test_same_price_is_not_reported_as_change(self):
+        with Database(self.path) as db:
+            db.add_new([listing(1, price=800)])
+            changed = db.update_prices([listing(1, price=800)])
+            self.assertEqual(changed, [])
+
+    def test_unknown_listing_is_ignored(self):
+        with Database(self.path) as db:
+            # "1" ще не додано через add_new — update_prices не має його чіпати.
+            changed = db.update_prices([listing(1, price=700)])
+            self.assertEqual(changed, [])
+            self.assertFalse(db.is_known("immoweb:1"))
+
+    def test_missing_price_is_ignored(self):
+        with Database(self.path) as db:
+            db.add_new([listing(1, price=800)])
+            changed = db.update_prices([listing(1, price=None)])
+            self.assertEqual(changed, [])
+
+
+class ProfileNotifiedTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = Path(self.tmp.name) / "test.db"
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_new_for_profile_returns_everything_first_time(self):
+        with Database(self.path) as db:
+            a, b = listing(1), listing(2)
+            db.add_new([a, b])
+            self.assertEqual(
+                {l.uid for l in db.new_for_profile("profile-a", [a, b])}, {a.uid, b.uid}
+            )
+
+    def test_marked_listings_are_excluded_next_time(self):
+        with Database(self.path) as db:
+            a, b = listing(1), listing(2)
+            db.add_new([a, b])
+            db.mark_notified_for_profile("profile-a", [a])
+            self.assertEqual(
+                [l.uid for l in db.new_for_profile("profile-a", [a, b])], [b.uid]
+            )
+
+    def test_different_profiles_are_independent(self):
+        with Database(self.path) as db:
+            a = listing(1)
+            db.add_new([a])
+            db.mark_notified_for_profile("profile-a", [a])
+            # Той самий листинг усе ще "новий" для іншого профілю.
+            self.assertEqual([l.uid for l in db.new_for_profile("profile-b", [a])], [a.uid])
+
+    def test_empty_input_returns_empty(self):
+        with Database(self.path) as db:
+            self.assertEqual(db.new_for_profile("profile-a", []), [])
+
+
 if __name__ == "__main__":
     unittest.main()

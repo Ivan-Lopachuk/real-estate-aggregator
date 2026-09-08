@@ -79,6 +79,8 @@ _MIGRATIONS: dict[str, str] = {
     "fiber_technology": "TEXT",
     "photo_url": "TEXT",
     "extra_costs": "REAL",
+    "price_previous": "REAL",
+    "price_changed_utc": "TEXT",
 }
 
 # Скільки днів «пам'ятаємо» оголошення для пошуку схожості на іншому сайті.
@@ -159,6 +161,35 @@ class Database:
             new.append(listing)
         self._conn.commit()
         return new
+
+    def update_prices(self, listings: Iterable[Listing]) -> list[tuple[str, float, float]]:
+        """
+        Для оголошень, які вже є в базі (нові сюди не потрапляють — про
+        них подбає add_new): якщо ціна на сайті відрізняється від тієї,
+        що записана в базі, оновлює її, а стару лишає в
+        price_previous/price_changed_utc — саме звідти дошка бере
+        бейдж «ціна знижена/підвищена». Повертає (uid, стара, нова) для
+        кожної реальної зміни.
+        """
+        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        changed: list[tuple[str, float, float]] = []
+        for listing in listings:
+            if listing.price is None:
+                continue
+            row = self._conn.execute(
+                "SELECT price FROM listings WHERE uid = ?", (listing.uid,)
+            ).fetchone()
+            if row is None or row["price"] is None or row["price"] == listing.price:
+                continue
+            old_price = row["price"]
+            self._conn.execute(
+                "UPDATE listings SET price = ?, price_previous = ?, price_changed_utc = ? WHERE uid = ?",
+                (listing.price, old_price, now, listing.uid),
+            )
+            changed.append((listing.uid, old_price, listing.price))
+        if changed:
+            self._conn.commit()
+        return changed
 
     def mark_notified(self, listings: Iterable[Listing]) -> None:
         """Позначає, що про ці оголошення сповіщення вже надіслано."""

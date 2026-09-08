@@ -171,10 +171,55 @@ class EmailSettings:
 
 
 @dataclass
+class TelegramSettings:
+    """
+    Розділ `notifications.telegram:` — сповіщення в Telegram через
+    власного бота (безкоштовно, без обмежень OpenRouter/SMTP).
+
+    chat_id можна задати або тут, або через змінну середовища
+    AGGREGATOR_TELEGRAM_CHAT_ID (як і адреса пошти вище) — корисно,
+    якщо не хочете тримати навіть id чату у публічному репозиторії.
+    """
+    chat_id: str
+    bot_token_env: str = "AGGREGATOR_TELEGRAM_BOT_TOKEN"
+
+    @property
+    def bot_token(self) -> str:
+        """Токен бота береться зі змінної середовища, а не з файлу."""
+        token = os.environ.get(self.bot_token_env)
+        if not token:
+            raise ConfigError(
+                f"Змінна середовища {self.bot_token_env!r} не задана. "
+                "У ній має бути токен Telegram-бота від @BotFather. "
+                "Див. README.md, розділ «Telegram-сповіщення»."
+            )
+        return token
+
+
+def parse_notification_methods(raw: str) -> set[str]:
+    """
+    Розбирає `notifications.method` на множину каналів. Підтримує:
+      * старі значення "console" / "email" / "both" (=console+email) —
+        щоб не ламати вже наявні config.yaml;
+      * "telegram" — новий канал;
+      * будь-яку комбінацію через кому, напр. "email,telegram" або
+        "console,email,telegram".
+    """
+    raw = raw.lower().strip()
+    if raw == "both":
+        return {"console", "email"}
+    return {token.strip() for token in raw.split(",") if token.strip()}
+
+
+_VALID_NOTIFICATION_METHODS = {"console", "email", "telegram"}
+
+
+@dataclass
 class NotificationSettings:
     """Розділ `notifications:`."""
-    method: str = "console"                 # console | email | both
+    method: str = "console"                 # console | email | telegram | both | будь-яка комбінація через кому
     email: Optional[EmailSettings] = None
+    telegram: Optional[TelegramSettings] = None
 
 
 @dataclass
@@ -295,16 +340,45 @@ class Config:
                     "у config.yaml або змінну AGGREGATOR_EMAIL_TO."
                 )
 
-        notifications = NotificationSettings(
-            method=str(n.get("method", "console")).lower(),
-            email=email,
-        )
-        if notifications.method not in ("console", "email", "both"):
-            raise ConfigError("notifications.method має бути 'console', 'email' або 'both'.")
-        if notifications.method in ("email", "both") and email is None:
-            raise ConfigError(
-                "notifications.method = email/both, але розділ 'email:' не заповнено."
+        telegram_raw = n.get("telegram") or {}
+        telegram: Optional[TelegramSettings] = None
+        if telegram_raw:
+            chat_id = (
+                os.environ.get("AGGREGATOR_TELEGRAM_CHAT_ID")
+                or str(telegram_raw.get("chat_id") or "")
+            ).strip()
+            if not chat_id:
+                raise ConfigError(
+                    "notifications.telegram: не задано 'chat_id' — вкажіть його "
+                    "у config.yaml або змінну AGGREGATOR_TELEGRAM_CHAT_ID."
+                )
+            telegram = TelegramSettings(
+                chat_id=chat_id,
+                bot_token_env=str(telegram_raw.get("bot_token_env", "AGGREGATOR_TELEGRAM_BOT_TOKEN")),
             )
+
+        method_raw = str(n.get("method", "console")).lower()
+        methods = parse_notification_methods(method_raw)
+        unknown = methods - _VALID_NOTIFICATION_METHODS
+        if not methods or unknown:
+            raise ConfigError(
+                "notifications.method має складатися з 'console', 'email', 'telegram' "
+                "(через кому) або бути 'both' (=console+email)."
+            )
+        if "email" in methods and email is None:
+            raise ConfigError(
+                "notifications.method включає 'email', але розділ 'email:' не заповнено."
+            )
+        if "telegram" in methods and telegram is None:
+            raise ConfigError(
+                "notifications.method включає 'telegram', але розділ 'telegram:' не заповнено."
+            )
+
+        notifications = NotificationSettings(
+            method=method_raw,
+            email=email,
+            telegram=telegram,
+        )
 
         db = data.get("database") or {}
         poll = data.get("poll") or {}
