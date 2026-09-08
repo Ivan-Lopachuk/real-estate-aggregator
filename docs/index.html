@@ -191,16 +191,6 @@
   .fav-star.on { color: #f59e0b; background: none; border: none; }
   .fav-star:active { transform: scale(1.25); }
 
-  /* Панель фільтрів (використовує стилі .sub-panel). */
-  #filterPanel .filter-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
-  }
-  #filterPanel .filter-grid label { margin-bottom: 8px; }
-  #filterPanel .filter-grid label.full { grid-column: 1 / -1; }
-  @media (max-width: 560px) {
-    #filterPanel .filter-grid { grid-template-columns: 1fr; }
-  }
-
   /* Кнопка «📍 На карті» на картці — вигляд «другорядної» дії поруч із
      синьою кнопкою «Відкрити на …». */
   .actions a.map-link {
@@ -379,27 +369,9 @@
     </div>
   </div>
 
-  <div class="sub-panel" id="filterPanel" hidden>
-    <div class="sub-panel-head">
-      <div class="title">⚙ Фільтри</div>
-      <button type="button" id="filterResetBtn">Скинути</button>
-    </div>
-    <div class="filter-grid">
-      <label>Ціна від, €<input type="number" id="filterPriceMin" min="0" step="10"></label>
-      <label>Ціна до, €<input type="number" id="filterPriceMax" min="0" step="10"></label>
-      <label>Місто
-        <select id="filterLocality"><option value="">усі</option></select>
-      </label>
-      <label>Спалень від<input type="number" id="filterBedroomsMin" min="0" step="1"></label>
-      <label>Площа від, м²<input type="number" id="filterAreaMin" min="0" step="5"></label>
-      <label class="checkbox full"><input type="checkbox" id="filterFiber"> Тільки з оптикою Proximus</label>
-    </div>
-  </div>
-
   <div class="bar" id="bar" hidden>
     <span class="count" id="count"></span>
     <div class="bar-actions">
-      <button id="filterToggleBtn">⚙ Фільтри</button>
       <button id="filterBtn">Тільки непереглянуті</button>
       <button id="markAllBtn">Позначити всі переглянутими</button>
       <button id="resetSeenBtn">↺ Скинути переглянуте</button>
@@ -425,16 +397,10 @@
 
 var STORE_KEY = "reab:opened";        // { uid: ISO-час коли позначено }
 var FAV_KEY = "reab:favorites";       // { uid: ISO-час коли додано в обране }
-var FILTERS_KEY = "reab:filters";     // збережені значення фільтрів
 var DATA = null;
 var onlyUnseen = false;
 var sortBy = "date";                  // "date" | "price_asc" | "price_desc"
 
-var DEFAULT_FILTERS = {
-  priceMin: "", priceMax: "", locality: "",
-  bedroomsMin: "", areaMin: "", fiberOnly: false,
-};
-var filters = loadFilters();
 // Якщо дошку відкрито за посиланням з листа, показуємо лише
 // оголошення саме з цього листа, а не всю історію. Переглянуті серед
 // них лишаються видимими, просто сіріють. Два варіанти позначки:
@@ -450,12 +416,23 @@ var idsFilterSet = idsFilter ? new Set(idsFilter.split(",")) : null;
 
 // Що зараз показано в основному списку:
 //  "empty"     — даних ще немає (перший запуск програми ще не відбувся)
-//  "all"       — усі оголошення за 90 днів (звичайне відкриття дошки)
+//  "home"      — звичайне відкриття дошки: порожньо, поки не буде пошуку
+//               (велика підказка «Почни з пошуку», список не показуємо)
+//  "all"       — усі оголошення за 90 днів (лишилось у коді, але типово
+//               в цей режим більше не заходимо — див. "home")
 //  "favorites" — лише додані в обране (⭐)
 //  "since"     — відкрито за посиланням з листа — нові з того запуску
 //  "search"    — щойно виконали пошук у чаті — його результати
-var mode = "all";
+var mode = "home";
 var searchResults = [];
+
+// Основний режим показу для цього відкриття дошки (без «обраного»):
+// список із листа, результати останнього пошуку або порожня головна.
+function baseMode() {
+  if (sinceFilter || idsFilterSet) return "since";
+  if (searchResults.length) return "search";
+  return "home";
+}
 
 function loadOpened() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
@@ -493,39 +470,6 @@ function setFav(uid, on) {
   saveFavs(map);
 }
 
-// ---------- Фільтри -------------------------------------------------
-function loadFilters() {
-  try {
-    return Object.assign({}, DEFAULT_FILTERS, JSON.parse(localStorage.getItem(FILTERS_KEY)) || {});
-  } catch (e) {
-    return Object.assign({}, DEFAULT_FILTERS);
-  }
-}
-function saveFilters() {
-  try { localStorage.setItem(FILTERS_KEY, JSON.stringify(filters)); } catch (e) {}
-}
-function filtersActive() {
-  return !!(filters.priceMin || filters.priceMax || filters.locality ||
-            filters.bedroomsMin || filters.areaMin || filters.fiberOnly);
-}
-function applyFilters(items) {
-  return items.filter(function (l) {
-    if (filters.priceMin && (l.price == null || l.price < +filters.priceMin)) return false;
-    if (filters.priceMax && (l.price == null || l.price > +filters.priceMax)) return false;
-    if (filters.locality &&
-        (l.locality || "").toLowerCase() !== filters.locality.toLowerCase()) return false;
-    if (filters.bedroomsMin && (l.bedrooms == null || l.bedrooms < +filters.bedroomsMin)) return false;
-    if (filters.areaMin && (l.living_area == null || l.living_area < +filters.areaMin)) return false;
-    if (filters.fiberOnly && l.fiber_available !== true) return false;
-    return true;
-  });
-}
-// Фільтри діють лише в режимах перегляду всього списку — у "since"
-// (лист) і "search" (AI-пошук) показуємо саме те, що прийшло.
-function filtersApplyNow() {
-  return mode === "all" || mode === "favorites";
-}
-
 function fmtPrice(p, cur, extraCosts) {
   if (p == null) return "ціна не вказана";
   var unit = cur === "EUR" ? "€" : (cur || "");
@@ -552,6 +496,21 @@ function siteLabel(url) {
   if (url.indexOf("immovlan.be") !== -1) return "Immovlan";
   return "сайті";
 }
+// Назва картки. Коли сайт (Immoweb / Immovlan) не дав кількості спалень
+// (l.bedrooms — 0, null або відсутнє), прибираємо з назви фрагмент
+// "· N спалень", якщо він усе ж туди потрапив (старіші записи в базі,
+// зроблені до того, як з'явилось це правило). Де кількість відома —
+// назву не чіпаємо.
+function displayTitle(l) {
+  var t = l.title || "Оголошення";
+  if (!l.bedrooms) {
+    t = t.replace(/\s*·\s*\d+\s+спальн\S*/i, "")
+         .replace(/^\s*\d+\s+спальн\S*\s*·\s*/i, "")
+         .trim();
+  }
+  return t || "Оголошення";
+}
+
 function metaLine(l) {
   var bits = [];
   // 0 або відсутнє — сайт не дав кількості спалень (напр. студія);
@@ -599,7 +558,7 @@ function buildCard(l, onChange) {
   top.className = "top";
   var title = document.createElement("div");
   title.className = "title";
-  title.textContent = l.title || "Оголошення";
+  title.textContent = displayTitle(l);
   var badge = document.createElement("span");
   badge.className = "badge";
   badge.textContent = "нове";
@@ -714,7 +673,7 @@ function currentBase() {
     return DATA.listings.filter(function (l) { return l.first_seen_utc >= sinceFilter; });
   }
   if (mode === "all") return DATA.listings.slice();
-  return [];
+  return [];  // "home" / "empty" — на дошці нічого не показуємо, поки не буде пошуку
 }
 
 function render() {
@@ -724,13 +683,13 @@ function render() {
   list.innerHTML = "";
 
   var base = currentBase();
-  var filtered = filtersApplyNow() ? applyFilters(base) : base;
+  var filtered = base;
   var items = filtered.filter(function (l) {
     return onlyUnseen ? !isSeen(l.uid) : true;
   });
   items = sortItems(items, sortBy);
 
-  bar.hidden = mode === "empty";
+  bar.hidden = mode === "empty" || mode === "home";
   updateBarControls(base, filtered);
 
   empty.hidden = items.length !== 0;
@@ -746,10 +705,6 @@ function render() {
   } else if (mode === "search") {
     empty.innerHTML = "";
     empty.appendChild(buildEmptyState("🔍", "Нічого не знайдено", "Спробуй змінити критерії запиту — інше місто, вищу ціну або менше кімнат.", []));
-  } else if (mode === "all" && filtersActive()) {
-    empty.innerHTML = "";
-    empty.appendChild(buildEmptyState("🔍", "Нічого не підходить під фільтри",
-      "Спробуй послабити фільтри або натисни «Скинути» в панелі фільтрів.", []));
   } else if (mode === "all") {
     empty.innerHTML = "";
     empty.appendChild(buildEmptyState("🏠", "Список поки порожній",
@@ -768,7 +723,7 @@ function render() {
   });
 }
 
-// Оновлює підпис-лічильник і кнопки «★ Обрані» / «⚙ Фільтри».
+// Оновлює підпис-лічильник і кнопку «★ Обране».
 function updateBarControls(base, filtered) {
   if (mode === "empty") return;
 
@@ -777,23 +732,14 @@ function updateBarControls(base, filtered) {
     countEl.textContent = "В обраному: " + base.length;
   } else {
     var unseen = filtered.filter(function (l) { return !isSeen(l.uid); }).length;
-    var head = filtered.length + " оголошень";
-    if (filtersApplyNow() && filtersActive() && filtered.length !== base.length) {
-      head += " (з " + base.length + ")";
-    }
-    countEl.textContent = head + ", непереглянутих: " + unseen;
+    countEl.textContent = filtered.length + " оголошень, непереглянутих: " + unseen;
   }
 
   var favBtn = document.getElementById("favModeBtn");
   var onFav = mode === "favorites";
-  favBtn.textContent = onFav ? "← Усі оголошення" : "★ Обране";
+  favBtn.textContent = onFav ? "← Назад" : "★ Обране";
   favBtn.classList.toggle("hero-btn-solid", onFav);
   favBtn.classList.toggle("hero-btn-outline", !onFav);
-
-  var filterBtn = document.getElementById("filterToggleBtn");
-  filterBtn.hidden = !filtersApplyNow();
-  filterBtn.classList.toggle("on", filtersActive() && !document.getElementById("filterPanel").hidden);
-  if (!filtersApplyNow()) document.getElementById("filterPanel").hidden = true;
 }
 
 function sortItems(items, by) {
@@ -1303,20 +1249,12 @@ function initChat() {
 function init(data) {
   DATA = data;
   if (sinceFilter || idsFilterSet) mode = "since";
-  else mode = (DATA.listings && DATA.listings.length) ? "all" : "empty";
-
-  populateCityFilter();
-  syncFilterInputs();
-  initFilterPanel();
+  else mode = (DATA.listings && DATA.listings.length) ? "home" : "empty";
 
   document.getElementById("favModeBtn").addEventListener("click", function () {
-    mode = (mode === "favorites") ? "all" : "favorites";
-    document.getElementById("filterPanel").hidden = true;
-    render();
-  });
-  document.getElementById("filterToggleBtn").addEventListener("click", function () {
-    var panel = document.getElementById("filterPanel");
-    panel.hidden = !panel.hidden;
+    // З «обраного» повертаємось туди, звідки прийшли: до результатів
+    // пошуку, до списку з листа або до порожньої головної.
+    mode = (mode === "favorites") ? baseMode() : "favorites";
     render();
   });
 
@@ -1348,52 +1286,6 @@ function init(data) {
   syncSeenFromServer();
   syncFavsFromServer();
   render();
-}
-
-// Заповнює випадний список міст назвами, що реально є в даних.
-function populateCityFilter() {
-  var sel = document.getElementById("filterLocality");
-  var seen = {};
-  (DATA.listings || []).forEach(function (l) { if (l.locality) seen[l.locality] = true; });
-  Object.keys(seen).sort(function (a, b) { return a.localeCompare(b, "uk"); }).forEach(function (c) {
-    var o = document.createElement("option");
-    o.value = c; o.textContent = c;
-    sel.appendChild(o);
-  });
-}
-
-// Ставить у поля форми поточні значення filters (при відкритті / після «Скинути»).
-function syncFilterInputs() {
-  document.getElementById("filterPriceMin").value = filters.priceMin;
-  document.getElementById("filterPriceMax").value = filters.priceMax;
-  document.getElementById("filterLocality").value = filters.locality;
-  document.getElementById("filterBedroomsMin").value = filters.bedroomsMin;
-  document.getElementById("filterAreaMin").value = filters.areaMin;
-  document.getElementById("filterFiber").checked = filters.fiberOnly;
-}
-
-function initFilterPanel() {
-  function onChange() {
-    filters.priceMin = document.getElementById("filterPriceMin").value;
-    filters.priceMax = document.getElementById("filterPriceMax").value;
-    filters.locality = document.getElementById("filterLocality").value;
-    filters.bedroomsMin = document.getElementById("filterBedroomsMin").value;
-    filters.areaMin = document.getElementById("filterAreaMin").value;
-    filters.fiberOnly = document.getElementById("filterFiber").checked;
-    saveFilters();
-    render();
-  }
-  ["filterPriceMin", "filterPriceMax", "filterBedroomsMin", "filterAreaMin"].forEach(function (id) {
-    document.getElementById(id).addEventListener("input", onChange);
-  });
-  document.getElementById("filterLocality").addEventListener("change", onChange);
-  document.getElementById("filterFiber").addEventListener("change", onChange);
-  document.getElementById("filterResetBtn").addEventListener("click", function () {
-    filters = Object.assign({}, DEFAULT_FILTERS);
-    saveFilters();
-    syncFilterInputs();
-    render();
-  });
 }
 
 initChat();
