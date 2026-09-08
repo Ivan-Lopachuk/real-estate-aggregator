@@ -19,6 +19,9 @@
     --fiber-bg: #dbeafe;
     --fiber-fg: #1d4ed8;
     --shadow: 0 1px 2px rgba(23,23,55,.04), 0 4px 14px rgba(23,23,55,.07);
+    /* Власна стрілочка для випадних списків (щоб стояла рівно по центру
+       круглої кнопки, а не як криво малює її сам браузер). */
+    --caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%236b6b80' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -35,6 +38,7 @@
       --fiber-bg: rgba(96,165,250,.16);
       --fiber-fg: #93c5fd;
       --shadow: 0 4px 14px rgba(0,0,0,.35);
+      --caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%239797ad' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
   }
   * { box-sizing: border-box; }
@@ -171,9 +175,13 @@
      hidden-кнопки (напр. subCancelBtn) не ховались би насправді. */
   button[hidden] { display: none; }
   select.bar-select {
-    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 600; line-height: 1.4; cursor: pointer;
     border: 1px solid var(--border); background: var(--card); color: var(--text);
-    padding: 6px 12px; border-radius: 999px;
+    padding: 6px 34px 6px 14px; border-radius: 999px;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: var(--caret);
+    background-repeat: no-repeat;
+    background-position: right 14px center;
   }
 
   /* Зірочка «в обране» — правий нижній кут картки. Сіра, при наведенні
