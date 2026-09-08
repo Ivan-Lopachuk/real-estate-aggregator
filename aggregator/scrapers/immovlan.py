@@ -12,6 +12,19 @@ class="v3-search-card">` із семантичними мітками schema.org
 надійніше, ніж руками шукати по тексту, і стійкіше до дрібних змін
 верстки, ніж regex по всьому HTML.
 
+ТОЧНА АДРЕСА — З ОКРЕМОЇ СТОРІНКИ ОГОЛОШЕННЯ
+-------------------------------------------
+Картка в результатах пошуку показує лише місто й поштовий індекс. Саму
+вулицю й номер будинку Immovlan пише вже на сторінці конкретного
+оголошення — у блоці schema.org JSON-LD (`"@type": "RealEstateListing"`,
+поле `mainEntity.address.streetAddress`). Тож для кожного оголошення
+робимо ще один запит — на його сторінку — і дістаємо адресу звідти.
+Її використовує і кнопка «📍 На карті» на дошці, і перевірка оптики
+Proximus (aggregator/proximus.py). Щоб один запуск не зробив тисячу
+запитів на великій вибірці, кількість таких додаткових звернень
+обмежена (`_MAX_DETAIL_LOOKUPS`) — решта оголошень просто лишаться без
+точної адреси (на карті покажеться місто).
+
 Адреса сторінки пошуку має такий вигляд:
 
     https://immovlan.be/en/real-estate?transactiontypes=for-rent
@@ -28,6 +41,8 @@ class="v3-search-card">` із семантичними мітками schema.org
 
 from __future__ import annotations
 
+import dataclasses
+import json
 import logging
 import re
 from typing import Iterator, Optional
@@ -47,6 +62,23 @@ _TRANSACTION_TO_SEGMENT = {"rent": "for-rent", "sale": "for-sale"}
 _BEDROOMS_RE = re.compile(r"^(\d+)\s*Bedroom")
 _AREA_RE = re.compile(r"^(\d+(?:[.,]\d+)?)\s*m\xb2$")
 
+# Розбір рядка адреси Immovlan на (вулиця, номер будинку). Формат буває:
+#   "Kerkstraat 12"                     -> ("Kerkstraat", "12")
+#   "Sint-Denijssestraat 171"           -> ("Sint-Denijssestraat", "171")
+#   "Avenue des Villas 12A"             -> ("Avenue des Villas", "12A")
+#   "Paleisstraat 3 0031"  (3 = дім, 0031 = бокс/поштова скринька)
+#                                       -> ("Paleisstraat", "3")
+#   "Raveschootstraat 2/201"            -> ("Raveschootstraat", "2")
+# Беремо ПЕРШЕ число як номер будинку; усе після нього (бокс, "bus 3",
+# "/201") відкидаємо — для карти й перевірки оптики потрібен саме дім.
+_STREET_NUMBER_RE = re.compile(r"^(.*?)\s+(\d+[a-zA-Z]?)(?:[\s/].*)?$")
+
+# Скільки сторінок окремих оголошень максимум відкриваємо за один
+# запуск заради точної адреси. Захист від тисяч запитів, якщо вибірка
+# раптом стане дуже великою — на звичайному пошуку по кількох містах
+# оголошень набагато менше.
+_MAX_DETAIL_LOOKUPS = 100
+
 
 @register
 class ImmovlanScraper(BaseScraper):
@@ -54,6 +86,8 @@ class ImmovlanScraper(BaseScraper):
 
     def fetch(self) -> Iterator[Listing]:
         transaction_segment = _TRANSACTION_TO_SEGMENT.get(self.criteria.transaction, "for-rent")
+        # Лічильник спільний на весь прохід (усі типи житла, усі сторінки).
+        self._detail_lookups = 0
 
         for property_type in self._property_types():
             yield from self._fetch_search_pages(transaction_segment, property_type)
@@ -104,9 +138,81 @@ class ImmovlanScraper(BaseScraper):
             for card in cards:
                 listing = self._to_listing(card, property_type)
                 if listing is not None:
-                    yield listing
+                    yield self._with_exact_address(listing)
 
             self._sleep()
+
+    # -- точна адреса зі сторінки оголошення ------------------------
+
+    def _with_exact_address(self, listing: Listing) -> Listing:
+        """
+        Доповнює `listing` вулицею й номером будинку зі сторінки самого
+        оголошення. Якщо ліміт запитів вичерпано або адресу дістати не
+        вдалося — повертає оголошення без змін (на карті буде місто).
+        """
+        count = getattr(self, "_detail_lookups", 0)
+        if count >= _MAX_DETAIL_LOOKUPS:
+            if count == _MAX_DETAIL_LOOKUPS:
+                log.warning(
+                    "immovlan: досягнуто ліміту %d запитів по точну адресу — "
+                    "решта оголошень цього проходу лишаться без вулиці",
+                    _MAX_DETAIL_LOOKUPS,
+                )
+                self._detail_lookups = count + 1  # щоб попередити лише раз
+            return listing
+
+        self._detail_lookups = count + 1
+        street, house_number = self._fetch_detail_address(listing.url)
+        self._sleep()
+        if not street:
+            return listing
+        return dataclasses.replace(listing, street=street, house_number=house_number)
+
+    def _fetch_detail_address(self, url: str) -> tuple[Optional[str], Optional[str]]:
+        """Завантажує сторінку оголошення й дістає з неї адресу."""
+        try:
+            resp = self.session.get(url, timeout=self.http.timeout_seconds)
+            resp.raise_for_status()
+        except Exception:
+            log.warning("immovlan: не вдалося відкрити сторінку оголошення %s", url, exc_info=True)
+            return None, None
+        return self._parse_detail_address(resp.text)
+
+    @staticmethod
+    def _parse_detail_address(html: str) -> tuple[Optional[str], Optional[str]]:
+        """
+        Дістає адресу з блоків schema.org JSON-LD на сторінці оголошення.
+        Беремо саме `mainEntity.address` (сама нерухомість) — НЕ
+        `offers.offeredBy.address`, бо то адреса агентства. Якщо
+        оголошення вже зняте, Immovlan віддає замість нього список інших
+        квартир — там `mainEntity` без адреси, і ми повертаємо (None, None).
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        for tag in soup.find_all("script", attrs={"type": "application/ld+json"}):
+            try:
+                data = json.loads(tag.string or "")
+            except (ValueError, TypeError):
+                continue
+            street_address = ImmovlanScraper._street_address_from_jsonld(data)
+            if street_address:
+                return _split_street_and_number(street_address)
+        return None, None
+
+    @staticmethod
+    def _street_address_from_jsonld(data) -> Optional[str]:
+        entries = data if isinstance(data, list) else [data]
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            node = entry.get("mainEntity")
+            if not isinstance(node, dict):
+                node = entry
+            address = node.get("address")
+            if isinstance(address, dict):
+                street_address = address.get("streetAddress")
+                if isinstance(street_address, str) and street_address.strip():
+                    return street_address.strip()
+        return None
 
     # -- перетворення однієї картки в Listing ---------------------
 
@@ -172,3 +278,17 @@ class ImmovlanScraper(BaseScraper):
         if locality:
             bits.append(locality)
         return " · ".join(bits) or "Оголошення Immovlan"
+
+
+def _split_street_and_number(street_address: str) -> tuple[str, Optional[str]]:
+    """
+    Ділить рядок адреси на (вулиця, номер будинку) — так само, як
+    Immoweb віддає їх уже окремо, щоб дедуплікація за адресою й перевірка
+    оптики Proximus працювали для обох сайтів однаково. Приклади — див.
+    коментар біля `_STREET_NUMBER_RE`.
+    """
+    text = street_address.strip()
+    m = _STREET_NUMBER_RE.match(text)
+    if m:
+        return m.group(1).strip(), m.group(2)
+    return text, None

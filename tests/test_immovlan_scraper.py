@@ -12,7 +12,10 @@ import unittest
 from bs4 import BeautifulSoup
 
 from aggregator.config import HttpSettings, SearchCriteria
-from aggregator.scrapers.immovlan import ImmovlanScraper
+from aggregator.scrapers.immovlan import (
+    ImmovlanScraper,
+    _split_street_and_number,
+)
 
 
 def _card(html: str):
@@ -96,6 +99,130 @@ class ToListingTests(unittest.TestCase):
     def test_card_without_data_url_is_skipped(self):
         card = _card('<article class="v3-search-card"></article>')
         self.assertIsNone(_scraper()._to_listing(card, "house"))
+
+
+# Сторінка оголошення: schema.org JSON-LD, як у справжньому Immovlan.
+# Адреса самої нерухомості — у mainEntity.address; адреса агентства
+# (offers.offeredBy.address) НЕ має плутатися з нею.
+_DETAIL_PAGE = """
+<html><head>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RealEstateListing",
+  "mainEntity": {
+    "@type": "Apartment",
+    "address": {"@type": "PostalAddress", "streetAddress": "Oudenaardsesteenweg 20",
+                "addressLocality": "Kortrijk", "postalCode": "8500"},
+    "geo": {"@type": "GeoCoordinates", "latitude": 50.82, "longitude": 3.27}
+  },
+  "offers": {
+    "@type": "Offer",
+    "offeredBy": {"@type": "RealEstateAgent", "name": "Immo Test",
+      "address": {"@type": "PostalAddress", "streetAddress": "Veemarkt 53"}}
+  }
+}
+</script>
+</head><body></body></html>
+"""
+
+# Оголошення знято — Immovlan віддає список інших квартир, без адреси.
+_DETAIL_PAGE_GONE = """
+<html><head>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "ItemList",
+ "itemListElement": [{"@type": "ListItem", "item": {"@type": "RealEstateListing",
+   "mainEntity": {"@type": "Apartment",
+     "address": {"@type": "PostalAddress", "addressLocality": "Kortrijk", "postalCode": "8500"}}}}]}
+</script>
+</head><body></body></html>
+"""
+
+
+class _FakeResponse:
+    def __init__(self, text: str):
+        self.text = text
+
+    def raise_for_status(self):
+        pass
+
+
+class _FakeSession:
+    """Підміняє self.session — рахує запити, віддає заготовлений HTML."""
+
+    def __init__(self, text: str):
+        self._text = text
+        self.calls = 0
+
+    def get(self, url, **kwargs):
+        self.calls += 1
+        return _FakeResponse(self._text)
+
+
+class SplitStreetAndNumberTests(unittest.TestCase):
+    def test_plain_street_and_number(self):
+        self.assertEqual(_split_street_and_number("Kerkstraat 12"), ("Kerkstraat", "12"))
+
+    def test_multiword_street(self):
+        self.assertEqual(
+            _split_street_and_number("Sint-Denijssestraat 171"), ("Sint-Denijssestraat", "171")
+        )
+
+    def test_box_number_after_house_number_is_dropped(self):
+        self.assertEqual(_split_street_and_number("Paleisstraat 3 0031"), ("Paleisstraat", "3"))
+
+    def test_slash_box_is_dropped(self):
+        self.assertEqual(
+            _split_street_and_number("Raveschootstraat 2/201"), ("Raveschootstraat", "2")
+        )
+
+    def test_number_with_letter(self):
+        self.assertEqual(
+            _split_street_and_number("Avenue des Villas 12A"), ("Avenue des Villas", "12A")
+        )
+
+    def test_street_without_number(self):
+        self.assertEqual(_split_street_and_number("Grote Markt"), ("Grote Markt", None))
+
+
+class ParseDetailAddressTests(unittest.TestCase):
+    def test_reads_property_address_not_agency_address(self):
+        street, number = ImmovlanScraper._parse_detail_address(_DETAIL_PAGE)
+        self.assertEqual((street, number), ("Oudenaardsesteenweg", "20"))
+
+    def test_withdrawn_listing_yields_no_address(self):
+        self.assertEqual(
+            ImmovlanScraper._parse_detail_address(_DETAIL_PAGE_GONE), (None, None)
+        )
+
+    def test_garbage_html_yields_no_address(self):
+        self.assertEqual(ImmovlanScraper._parse_detail_address("<html></html>"), (None, None))
+
+
+class WithExactAddressTests(unittest.TestCase):
+    def _listing(self):
+        return _scraper()._to_listing(_card(_FULL_CARD), "apartment")
+
+    def test_fills_street_and_number_from_detail_page(self):
+        scraper = _scraper()
+        scraper.http = HttpSettings(request_delay_seconds=0)
+        scraper.session = _FakeSession(_DETAIL_PAGE)
+        scraper._detail_lookups = 0
+
+        enriched = scraper._with_exact_address(self._listing())
+        self.assertEqual(enriched.street, "Oudenaardsesteenweg")
+        self.assertEqual(enriched.house_number, "20")
+
+    def test_stops_making_requests_once_limit_reached(self):
+        scraper = _scraper()
+        scraper.http = HttpSettings(request_delay_seconds=0)
+        scraper.session = _FakeSession(_DETAIL_PAGE)
+        scraper._detail_lookups = 10_000  # ліміт уже вичерпано
+
+        listing = self._listing()
+        result = scraper._with_exact_address(listing)
+        self.assertEqual(scraper.session.calls, 0)
+        self.assertIs(result, listing)
 
 
 class PropertyTypesTests(unittest.TestCase):

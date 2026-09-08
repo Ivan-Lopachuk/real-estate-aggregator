@@ -45,6 +45,25 @@ class DatabaseTests(unittest.TestCase):
             self.assertTrue(db.is_known("immoweb:1"))
             self.assertEqual(db.add_new([listing(1)]), [])
 
+    def test_fill_missing_address_updates_only_rows_without_one(self):
+        with Database(self.path) as db:
+            db.add_new([
+                listing(1),  # без адреси
+                listing(2, street="Kerkstraat", house_number="9"),  # адреса вже є
+            ])
+
+            updated = db.fill_missing_address([
+                listing(1, street="Nieuwstraat", house_number="1"),
+                listing(2, street="ЗМІНЕНО", house_number="99"),
+                listing(3, street="Onbekend", house_number="1"),  # немає в базі
+            ])
+
+            self.assertEqual(updated, 1)
+            rows = {r["uid"]: r for r in db.recent_listings(days=1)}
+            self.assertEqual(rows["immoweb:1"]["street"], "Nieuwstraat")
+            self.assertEqual(rows["immoweb:1"]["house_number"], "1")
+            self.assertEqual(rows["immoweb:2"]["street"], "Kerkstraat")  # не чіпаємо
+
 
 def make_pair(**shared):
     """Те саме оголошення, ніби виставлене на двох різних сайтах."""

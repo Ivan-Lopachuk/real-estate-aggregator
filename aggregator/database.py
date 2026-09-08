@@ -191,6 +191,34 @@ class Database:
             self._conn.commit()
         return changed
 
+    def fill_missing_address(self, listings: Iterable[Listing]) -> int:
+        """
+        Проставляє вулицю й номер будинку тим оголошенням, які вже є в
+        базі, але без адреси, — коли свіжі дані із сайту її вже містять.
+
+        Потрібно для Immovlan: точну адресу програма дізнається з окремої
+        сторінки оголошення, і оголошення могло потрапити в базу ще
+        версією програми, яка цього не вміла. Повертає, скільки рядків
+        оновлено.
+        """
+        updated = 0
+        for listing in listings:
+            if not listing.street:
+                continue
+            row = self._conn.execute(
+                "SELECT street FROM listings WHERE uid = ?", (listing.uid,)
+            ).fetchone()
+            if row is None or row["street"]:
+                continue
+            self._conn.execute(
+                "UPDATE listings SET street = ?, house_number = ? WHERE uid = ?",
+                (listing.street, listing.house_number, listing.uid),
+            )
+            updated += 1
+        if updated:
+            self._conn.commit()
+        return updated
+
     def mark_notified(self, listings: Iterable[Listing]) -> None:
         """Позначає, що про ці оголошення сповіщення вже надіслано."""
         self._conn.executemany(
