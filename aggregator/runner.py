@@ -90,6 +90,31 @@ def _update_fiber_availability(db: Database, listings: list[Listing], delay_seco
             time.sleep(delay_seconds)
 
 
+def _backfill_immovlan_addresses(db: Database, config: Config) -> None:
+    """
+    Дозаповнює вулицю й номер будинку оголошенням Immovlan, які вже є в
+    базі без адреси. Робить окремий запит на сторінку кожного такого
+    оголошення (з тим самим лімітом, що й звичайний прохід). Якщо
+    оголошення вже зняте й адреси на сторінці немає — просто лишає як є.
+    """
+    if "immovlan" not in config.sites:
+        return
+    pending = db.listings_missing_street("immovlan", days=90)
+    if not pending:
+        return
+
+    scraper = get_scraper("immovlan")(config.search, config.http)
+    found = scraper.addresses_for_urls([row["url"] for row in pending])
+    updated = 0
+    for row in pending:
+        address = found.get(row["url"])
+        if address:
+            db.set_address(row["uid"], address[0], address[1])
+            updated += 1
+    if updated:
+        log.info("Immovlan: дозаповнено адресу для %d давніших оголошень", updated)
+
+
 def run_once(config: Config) -> int:
     """Виконує один повний прохід. Повертає кількість нових оголошень."""
     listing_filter = ListingFilter(config.search)
@@ -154,6 +179,12 @@ def run_once(config: Config) -> int:
                 log.info("нових оголошень з минулого запуску немає")
         else:
             log.info("цього разу нічого не підійшло")
+
+        # Оголошення Immovlan, які лежать у базі без вулиці (додані ще
+        # старою версією програми або через тимчасовий збій запиту, і вже
+        # зникли з результатів пошуку) — пробуємо дозаповнити з їхніх
+        # сторінок, доки ті ще живі.
+        _backfill_immovlan_addresses(db, config)
 
         # Веб-дошку оновлюємо щоразу, навіть коли нових оголошень немає —
         # щоб на сторінці був актуальний список і час останньої перевірки.

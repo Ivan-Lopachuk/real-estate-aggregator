@@ -219,6 +219,35 @@ class Database:
             self._conn.commit()
         return updated
 
+    def listings_missing_street(self, site: str, days: int = 90) -> list[sqlite3.Row]:
+        """
+        Оголошення цього сайту, вперше побачені за останні `days` днів, у
+        яких досі немає вулиці (uid, url). Потрібно, щоб дозаповнити
+        адресу тим оголошенням Immovlan, які потрапили в базу ще до того,
+        як програма навчилася її діставати (або коли той запит не вдався).
+        """
+        cutoff = (
+            datetime.now(timezone.utc) - timedelta(days=days)
+        ).isoformat(timespec="seconds")
+        return list(
+            self._conn.execute(
+                """
+                SELECT uid, url FROM listings
+                WHERE site = ? AND first_seen_utc >= ?
+                  AND (street IS NULL OR street = '')
+                """,
+                (site, cutoff),
+            ).fetchall()
+        )
+
+    def set_address(self, uid: str, street: str, house_number: Optional[str]) -> None:
+        """Записує вулицю й номер будинку для одного оголошення."""
+        self._conn.execute(
+            "UPDATE listings SET street = ?, house_number = ? WHERE uid = ?",
+            (street, house_number, uid),
+        )
+        self._conn.commit()
+
     def mark_notified(self, listings: Iterable[Listing]) -> None:
         """Позначає, що про ці оголошення сповіщення вже надіслано."""
         self._conn.executemany(

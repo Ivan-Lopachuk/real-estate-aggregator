@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-08T19:33:43+00:00",
+ "generated_utc": "2026-09-08T19:48:31+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
@@ -186,8 +186,8 @@
    "living_area": 48.0,
    "locality": "Gent",
    "postal_code": "9000",
-   "street": null,
-   "house_number": null,
+   "street": "Raveschootstraat",
+   "house_number": "2",
    "photo_url": "https://api-image.immovlan.be/v1/property/RWC43339/thumbnail-webp/Medium?h=280",
    "fiber_available": null,
    "first_seen_utc": "2026-09-04T12:41:46+00:00"

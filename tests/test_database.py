@@ -45,6 +45,23 @@ class DatabaseTests(unittest.TestCase):
             self.assertTrue(db.is_known("immoweb:1"))
             self.assertEqual(db.add_new([listing(1)]), [])
 
+    def test_listings_missing_street_then_set_address(self):
+        with Database(self.path) as db:
+            db.add_new([
+                listing(1, site="immovlan"),                               # без вулиці
+                listing(2, site="immovlan", street="Dorp", house_number="3"),
+                listing(3, site="immoweb"),                                # інший сайт
+            ])
+
+            pending = db.listings_missing_street("immovlan", days=1)
+            self.assertEqual({r["uid"] for r in pending}, {"immovlan:1"})
+
+            db.set_address("immovlan:1", "Nieuwstraat", "5")
+            self.assertEqual(db.listings_missing_street("immovlan", days=1), [])
+            rows = {r["uid"]: r for r in db.recent_listings(days=1)}
+            self.assertEqual(rows["immovlan:1"]["street"], "Nieuwstraat")
+            self.assertEqual(rows["immovlan:1"]["house_number"], "5")
+
     def test_fill_missing_address_updates_only_rows_without_one(self):
         with Database(self.path) as db:
             db.add_new([

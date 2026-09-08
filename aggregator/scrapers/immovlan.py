@@ -25,6 +25,11 @@ Proximus (aggregator/proximus.py). Щоб один запуск не зроби�
 обмежена (`_MAX_DETAIL_LOOKUPS`) — решта оголошень просто лишаться без
 точної адреси (на карті покажеться місто).
 
+Оголошенням, які потрапили в базу ще без адреси (стара версія програми
+або тимчасовий збій запиту), її потім дозаповнює runner —
+`_backfill_immovlan_addresses()` через метод `addresses_for_urls()`
+нижче, доки сторінка оголошення ще жива.
+
 Адреса сторінки пошуку має такий вигляд:
 
     https://immovlan.be/en/real-estate?transactiontypes=for-rent
@@ -45,7 +50,7 @@ import dataclasses
 import json
 import logging
 import re
-from typing import Iterator, Optional
+from typing import Iterable, Iterator, Optional
 
 from bs4 import BeautifulSoup, Tag
 
@@ -84,9 +89,14 @@ _MAX_DETAIL_LOOKUPS = 100
 class ImmovlanScraper(BaseScraper):
     site_name = "immovlan"
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # Скільки сторінок окремих оголошень уже відкрито за цей об'єкт
+        # (обмежуємо на _MAX_DETAIL_LOOKUPS — див. константу вгорі).
+        self._detail_lookups = 0
+
     def fetch(self) -> Iterator[Listing]:
         transaction_segment = _TRANSACTION_TO_SEGMENT.get(self.criteria.transaction, "for-rent")
-        # Лічильник спільний на весь прохід (усі типи житла, усі сторінки).
         self._detail_lookups = 0
 
         for property_type in self._property_types():
@@ -150,23 +160,44 @@ class ImmovlanScraper(BaseScraper):
         оголошення. Якщо ліміт запитів вичерпано або адресу дістати не
         вдалося — повертає оголошення без змін (на карті буде місто).
         """
-        count = getattr(self, "_detail_lookups", 0)
-        if count >= _MAX_DETAIL_LOOKUPS:
-            if count == _MAX_DETAIL_LOOKUPS:
-                log.warning(
-                    "immovlan: досягнуто ліміту %d запитів по точну адресу — "
-                    "решта оголошень цього проходу лишаться без вулиці",
-                    _MAX_DETAIL_LOOKUPS,
-                )
-                self._detail_lookups = count + 1  # щоб попередити лише раз
-            return listing
-
-        self._detail_lookups = count + 1
-        street, house_number = self._fetch_detail_address(listing.url)
-        self._sleep()
+        street, house_number = self._address_from_url(listing.url)
         if not street:
             return listing
         return dataclasses.replace(listing, street=street, house_number=house_number)
+
+    def addresses_for_urls(
+        self, urls: Iterable[str]
+    ) -> dict[str, tuple[str, Optional[str]]]:
+        """
+        Для набору сторінок оголошень повертає {url: (вулиця, номер)} —
+        лише для тих, де адресу вдалося дістати. Спільний ліміт запитів
+        (`_MAX_DETAIL_LOOKUPS`) той самий, що й у звичайному проході.
+        Використовує runner, щоб дозаповнити адресу оголошенням, які вже
+        давно в базі без неї.
+        """
+        found: dict[str, tuple[str, Optional[str]]] = {}
+        for url in urls:
+            street, house_number = self._address_from_url(url)
+            if street:
+                found[url] = (street, house_number)
+        return found
+
+    def _address_from_url(self, url: str) -> tuple[Optional[str], Optional[str]]:
+        """Один запит на сторінку оголошення (з урахуванням ліміту й паузи)."""
+        if self._detail_lookups >= _MAX_DETAIL_LOOKUPS:
+            if self._detail_lookups == _MAX_DETAIL_LOOKUPS:
+                log.warning(
+                    "immovlan: досягнуто ліміту %d запитів по точну адресу — "
+                    "решта оголошень лишаться без вулиці",
+                    _MAX_DETAIL_LOOKUPS,
+                )
+                self._detail_lookups += 1  # щоб попередити лише раз
+            return None, None
+
+        self._detail_lookups += 1
+        street, house_number = self._fetch_detail_address(url)
+        self._sleep()
+        return street, house_number
 
     def _fetch_detail_address(self, url: str) -> tuple[Optional[str], Optional[str]]:
         """Завантажує сторінку оголошення й дістає з неї адресу."""

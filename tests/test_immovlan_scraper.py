@@ -148,15 +148,20 @@ class _FakeResponse:
 
 
 class _FakeSession:
-    """Підміняє self.session — рахує запити, віддає заготовлений HTML."""
+    """
+    Підміняє self.session — рахує запити, віддає заготовлений HTML.
+    `pages` — або один рядок на всі URL, або словник {url: html}.
+    """
 
-    def __init__(self, text: str):
-        self._text = text
+    def __init__(self, pages):
+        self._pages = pages
         self.calls = 0
 
     def get(self, url, **kwargs):
         self.calls += 1
-        return _FakeResponse(self._text)
+        if isinstance(self._pages, dict):
+            return _FakeResponse(self._pages.get(url, "<html></html>"))
+        return _FakeResponse(self._pages)
 
 
 class SplitStreetAndNumberTests(unittest.TestCase):
@@ -223,6 +228,24 @@ class WithExactAddressTests(unittest.TestCase):
         result = scraper._with_exact_address(listing)
         self.assertEqual(scraper.session.calls, 0)
         self.assertIs(result, listing)
+
+
+class AddressesForUrlsTests(unittest.TestCase):
+    def test_returns_addresses_only_for_pages_that_have_one(self):
+        scraper = _scraper()
+        scraper.http = HttpSettings(request_delay_seconds=0)
+        scraper.session = _FakeSession({
+            "https://immovlan.be/en/detail/x/1": _DETAIL_PAGE,
+            "https://immovlan.be/en/detail/x/2": _DETAIL_PAGE_GONE,
+        })
+
+        found = scraper.addresses_for_urls([
+            "https://immovlan.be/en/detail/x/1",
+            "https://immovlan.be/en/detail/x/2",
+        ])
+        self.assertEqual(
+            found, {"https://immovlan.be/en/detail/x/1": ("Oudenaardsesteenweg", "20")}
+        )
 
 
 class PropertyTypesTests(unittest.TestCase):
