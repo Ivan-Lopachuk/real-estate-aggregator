@@ -142,7 +142,9 @@ function card(l) {
 
   const badges = [el("span", { class: "badge badge--new", text: "нове" })];
   if (l.fiber_available === true) {
-    badges.push(el("span", { class: "badge badge--fiber", text: "⚡ оптика Proximus" }));
+    badges.push(el("span", { class: "badge badge--fiber" }, [
+      icon("bolt", { size: 12, filled: true }), "Оптика Proximus",
+    ]));
   }
   if (l.price_previous != null && l.price != null && l.price_previous !== l.price) {
     const down = l.price < l.price_previous;

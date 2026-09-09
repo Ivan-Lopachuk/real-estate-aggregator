@@ -44,19 +44,26 @@ const ICON_PATHS = {
   chevron: '<path d="m6 9 6 6 6-6"/>',
   user: '<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c1.2-3.7 4-5.5 7.2-5.5s6 1.8 7.2 5.5"/>',
   logout: '<path d="M15 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h9"/><path d="m16 8.5 3.5 3.5-3.5 3.5"/><path d="M19.5 12H9.5"/>',
+  pin: '<path d="M12 21.5c4-3.7 6.5-7.1 6.5-10.7A6.5 6.5 0 0 0 5.5 10.8c0 3.6 2.5 7 6.5 10.7z"/><circle cx="12" cy="10.5" r="2.5"/>',
+  bolt: '<path d="M13 2.5 5.5 13.2a.6.6 0 0 0 .5.95H11l-1 8.35 7.8-11.05a.6.6 0 0 0-.5-.95H12z"/>',
 };
 
-/** SVG-іконка з набору. opts: { size, stroke } */
-export function icon(name, { size = 20, stroke = 2 } = {}) {
+/** SVG-іконка з набору. opts: { size, stroke, filled } */
+export function icon(name, { size = 20, stroke = 2, filled = false } = {}) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("width", size);
   svg.setAttribute("height", size);
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", stroke);
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
+  if (filled) {
+    svg.setAttribute("fill", "currentColor");
+    svg.setAttribute("stroke", "none");
+  } else {
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", stroke);
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+  }
   svg.setAttribute("aria-hidden", "true");
   svg.classList.add("icon");
   svg.innerHTML = ICON_PATHS[name] || "";
@@ -147,7 +154,7 @@ export function metaLine(l) {
 }
 
 /**
- * Посилання «📍 На карті» — Google Maps на точну адресу квартири
+ * Посилання «На карті» — Google Maps на точну адресу квартири
  * (вулиця + номер, як у ~95% Immoweb); якщо адреси немає — на місто за
  * індексом. null, якщо немає ні адреси, ні міста (кнопку не показуємо).
  */
@@ -162,11 +169,10 @@ export function buildMapLink(l) {
     href: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(parts.join(", ")),
     target: "_blank",
     rel: "noopener",
-    text: street ? "📍 На карті" : "📍 Місто на карті",
     title: street
       ? "Показати точну адресу в Google Maps"
       : "Точної адреси в оголошенні немає — показати місто",
-  });
+  }, [icon("pin", { size: 15, stroke: 2.2 }), " ", street ? "На карті" : "Місто на карті"]);
 }
 
 /** Невеликий тост унизу екрана. */

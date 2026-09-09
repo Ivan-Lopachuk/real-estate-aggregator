@@ -4,7 +4,8 @@
  * Стиль навіяний сайтом IQOS: багато повітря, глибокий синьо-фіолетовий
  * (ink) + бірюзовий акцент (turquoise), дуже круглі кути, великі
  * «таблеткові» кнопки, м'які градієнтні відблиски, геометричний шрифт
- * Poppins.
+ * Montserrat (має і латиницю, і кирилицю — щоб український та англійський
+ * текст поруч виглядали однаково).
  *
  * Структура: токени в :root → темна тема → базові теги → компоненти
  * зверху вниз (навігація → лендінг → панелі → картки → форми → дрібне).
@@ -36,7 +37,7 @@
   --radius: 26px;
   --radius-sm: 16px;
   --maxw: 1000px;
-  --font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -532,7 +533,9 @@ img { max-width: 100%; }
 .listing__star:active { transform: scale(1.25); }
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-size: 10px;
   font-weight: 700;
   border-radius: 999px;
@@ -543,8 +546,9 @@ img { max-width: 100%; }
   background: var(--primary-soft);
   color: var(--primary-ink);
   text-transform: uppercase;
-  letter-spacing: .02em;
+  letter-spacing: .03em;
 }
+.badge .icon { margin-left: -1px; }
 .listing--seen .badge--new { display: none; }
 .badge--fiber { background: var(--fiber-soft); color: var(--fiber); }
 .badge--down { background: var(--ok-soft); color: var(--ok); }
