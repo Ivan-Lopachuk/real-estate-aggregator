@@ -20,9 +20,21 @@ Immoweb і Immovlan та повернути відповідь. Статична
        саме на іншому сайті, прибираються (aggregator/dedup.py).
     5. Повертає знайдені оголошення й коротку відповідь AI.
 
-Захист: заголовок `X-Access-Code` має збігатися зі змінною середовища
-ACCESS_CODE. Без цього — 401. OPENROUTER_API_KEY ніколи не потрапляє
-в браузер — усі виклики OpenRouter відбуваються тут, на сервері.
+Захист: усі закриті ендпоїнти (пошук, розсилка, стрічка, «переглянуто»,
+«обране») вимагають входу через Google (заголовок `Authorization:
+Bearer <session_token>`) І активної підписки на сайт. Підписку вмикає
+адмін вручну — окремого коду доступу більше немає. OPENROUTER_API_KEY
+ніколи не потрапляє в браузер — усі виклики OpenRouter відбуваються тут,
+на сервері.
+
+Крім чату, сервер обслуговує:
+    * вхід через Google           — /api/auth/google
+    * «хто я і що мені дозволено»  — /api/me
+    * підписку-розсилку            — /api/subscription
+    * стрічку сповіщень у кабінеті — /api/feed, /api/feed/read
+    * синхронізацію позначок       — /api/seen, /api/favorites
+    * панель адміна                — /api/admin/subscriptions, /api/admin/access-requests
+    * запит доступу від користувача — /api/access-request
 """
 
 from __future__ import annotations
@@ -52,7 +64,7 @@ from google.oauth2 import id_token as google_id_token
 # шлях пошуку модулів, щоб його можна було імпортувати.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from aggregator import geocoding, proximus  # noqa: E402
+from aggregator import entitlements, feed, geocoding, proximus  # noqa: E402
 from aggregator.config import HttpSettings, SearchCriteria  # noqa: E402
 from aggregator.dedup import dedupe_cross_site  # noqa: E402
 from aggregator.filters import ListingFilter  # noqa: E402
@@ -66,7 +78,17 @@ from aggregator.scrapers.base import available_scrapers, get_scraper  # noqa: E4
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s")
 log = logging.getLogger("chat-server")
 
+# ACCESS_CODE більше НЕ потрібен, щоб користуватись AI-пошуком (раніше
+# дошка питала його через prompt() при першому заході). Тепер доступ дає
+# активна підписка — див. _subscribed_user() нижче. Змінна лишилась лише
+# як запасний секрет для підпису токена сесії (див. SESSION_SECRET).
 ACCESS_CODE = os.environ.get("ACCESS_CODE", "")
+
+# Пошти адміністраторів через кому — вони завжди мають повний доступ до
+# сайту (незалежно від файлу підписок) і лише вони можуть видавати
+# підписку іншим. Типово — акаунт власника проєкту.
+ADMIN_EMAILS = os.environ.get("ADMIN_EMAILS", "lolp.onga@gmail.com")
+
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -143,8 +165,72 @@ _SYSTEM_PROMPT = """\
 """
 
 
-def _access_ok() -> bool:
-    return bool(ACCESS_CODE) and request.headers.get("X-Access-Code") == ACCESS_CODE
+def _admin_email_list() -> list[str]:
+    return [e.strip() for e in ADMIN_EMAILS.split(",") if e.strip()]
+
+
+# --- підписки (хто має право користуватись сайтом) -------------------
+#
+# Зберігається одним файлом у репозиторії: subscriptions/index.json
+# (див. aggregator/entitlements.py). Оплати немає — підписку вмикає
+# адмін вручну через панель "#/admin" на дошці.
+
+_SUBSCRIPTIONS_PATH = "subscriptions/index.json"
+_ACCESS_REQUESTS_PATH = "access_requests/index.json"
+
+
+def _read_subscription_store() -> dict:
+    """Поточний вміст subscriptions/index.json ({} якщо файлу ще немає)."""
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return {}
+    data, _sha = read_json(GH_REPO, GH_WRITE_TOKEN, _SUBSCRIPTIONS_PATH)
+    return data or {}
+
+
+def _entitlement_for(user: Optional[dict]) -> dict:
+    """Права поточної людини у форматі, який очікує фронтенд (GET /api/me)."""
+    if user is None:
+        return entitlements.entitlement_for({}, None, _admin_email_list())
+    try:
+        store = _read_subscription_store()
+    except GitHubStoreError:
+        log.exception("підписки: не вдалося прочитати сховище")
+        store = {}
+    return entitlements.entitlement_for(store, user.get("email"), _admin_email_list())
+
+
+def _subscribed_user() -> Optional[dict]:
+    """
+    Людина, що ввійшла ЧЕРЕЗ Google І має активну підписку (або є
+    адміном). Це головний "вартовий" сайту — усі закриті ендпоїнти
+    перевіряють саме його. None -> треба повернути 401/402.
+    """
+    user = _authenticated_user()
+    if user is None:
+        return None
+    return user if _entitlement_for(user)["active"] else None
+
+
+def _admin_user() -> Optional[dict]:
+    """Людина, що ввійшла і є в списку ADMIN_EMAILS. Інакше None."""
+    user = _authenticated_user()
+    if user is None:
+        return None
+    return user if _entitlement_for(user)["is_admin"] else None
+
+
+def _gate() -> "tuple[Optional[dict], Optional[tuple]]":
+    """
+    Спільний вартовий для закритих ендпоїнтів. Повертає (user, None),
+    якщо є і вхід через Google, і активна підписка; інакше
+    (None, (відповідь, код)) — 401 без входу, 402 без підписки.
+    """
+    user = _authenticated_user()
+    if user is None:
+        return None, (jsonify({"error": "потрібен вхід через Google"}), 401)
+    if not _entitlement_for(user)["active"]:
+        return None, (jsonify({"error": "Потрібна активна підписка на сайт."}), 402)
+    return user, None
 
 
 def _ask_openrouter(message: str, history: list[dict]) -> Optional[dict]:
@@ -405,8 +491,9 @@ def _listing_to_dict(l: Listing, fiber: Optional[tuple[bool, Optional[str]]] = N
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
-    if not _access_ok():
-        return jsonify({"error": "потрібен правильний код доступу"}), 401
+    _user, denied = _gate()
+    if denied is not None:
+        return denied
 
     body = request.get_json(force=True, silent=True) or {}
     message = str(body.get("message") or "").strip()
@@ -628,9 +715,9 @@ def _validate_subscription_body(body: dict) -> tuple[Optional[dict], Optional[st
 
 @app.route("/api/subscription", methods=["GET"])
 def get_subscription():
-    user = _authenticated_user()
-    if user is None:
-        return jsonify({"error": "потрібен вхід через Google"}), 401
+    user, denied = _gate()
+    if denied is not None:
+        return denied
     if not (GH_WRITE_TOKEN and GH_REPO):
         return jsonify({"error": "Розсилка ще не налаштована на сервері."}), 500
 
@@ -645,9 +732,9 @@ def get_subscription():
 
 @app.route("/api/subscription", methods=["POST"])
 def save_subscription():
-    user = _authenticated_user()
-    if user is None:
-        return jsonify({"error": "потрібен вхід через Google"}), 401
+    user, denied = _gate()
+    if denied is not None:
+        return denied
     if not (GH_WRITE_TOKEN and GH_REPO):
         return jsonify({"error": "Розсилка ще не налаштована на сервері."}), 500
 
@@ -702,9 +789,9 @@ def save_subscription():
 
 @app.route("/api/subscription", methods=["DELETE"])
 def delete_subscription():
-    user = _authenticated_user()
-    if user is None:
-        return jsonify({"error": "потрібен вхід через Google"}), 401
+    user, denied = _gate()
+    if denied is not None:
+        return denied
     if not (GH_WRITE_TOKEN and GH_REPO):
         return jsonify({"error": "Розсилка ще не налаштована на сервері."}), 500
 
@@ -721,6 +808,335 @@ def delete_subscription():
         return jsonify({"error": "Не вдалося скасувати розсилку."}), 502
 
     return jsonify({"ok": True})
+
+
+def _seen_path(google_sub: str) -> str:
+    return f"seen/{google_sub}.json"
+
+
+def _favorites_path(google_sub: str) -> str:
+    return f"favorites/{google_sub}.json"
+
+
+_MAX_SEEN_ENTRIES = 3000  # запобіжник від надто великого/зіпсованого файлу
+
+
+def _valid_uid_time_map(body) -> Optional[dict]:
+    """
+    Перевіряє, що тіло запиту — це справді {"uid рядком": "час рядком", ...},
+    не більше _MAX_SEEN_ENTRIES записів. Спільне для «переглянуто» (/api/seen)
+    і «обране» (/api/favorites) — формат однаковий. None, якщо щось не так.
+    """
+    if not isinstance(body, dict) or len(body) > _MAX_SEEN_ENTRIES:
+        return None
+    for key, value in body.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            return None
+    return body
+
+
+@app.route("/api/seen", methods=["GET"])
+def get_seen():
+    """
+    "Переглянуті" оголошення для залогіненого акаунта — щоб позначки не
+    губились при переході на інший пристрій/браузер (на відміну від
+    основного зберігання в localStorage, яке лишається на кожному
+    пристрої окремо для тих, хто не заходив через Google).
+    """
+    user, denied = _gate()
+    if denied is not None:
+        return denied
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"seen": {}})
+
+    try:
+        data, _sha = read_json(GH_REPO, GH_WRITE_TOKEN, _seen_path(user["sub"]))
+    except GitHubStoreError:
+        log.exception("переглянуті: не вдалося прочитати")
+        return jsonify({"error": "Не вдалося прочитати позначки «переглянуто»."}), 502
+
+    return jsonify({"seen": data or {}})
+
+
+@app.route("/api/seen", methods=["POST"])
+def save_seen():
+    user, denied = _gate()
+    if denied is not None:
+        return denied
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Синхронізація ще не налаштована на сервері."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    seen = _valid_uid_time_map(body.get("seen"))
+    if seen is None:
+        return jsonify({"error": "Неправильний формат позначок."}), 400
+
+    path = _seen_path(user["sub"])
+    try:
+        _existing, sha = read_json(GH_REPO, GH_WRITE_TOKEN, path)
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, path, seen,
+            message=f"Синхронізація переглянутого для {user['email']}",
+            sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("переглянуті: не вдалося зберегти")
+        return jsonify({"error": "Не вдалося зберегти позначки «переглянуто»."}), 502
+
+    return jsonify({"seen": seen})
+
+
+@app.route("/api/favorites", methods=["GET"])
+def get_favorites():
+    """
+    «Обране» (⭐) для залогіненого акаунта — щоб збережені оголошення були
+    ті самі на телефоні й на ноутбуці. Механіка один-в-один як у
+    /api/seen, лише окремий файл (favorites/<sub>.json).
+    """
+    user, denied = _gate()
+    if denied is not None:
+        return denied
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"favorites": {}})
+
+    try:
+        data, _sha = read_json(GH_REPO, GH_WRITE_TOKEN, _favorites_path(user["sub"]))
+    except GitHubStoreError:
+        log.exception("обране: не вдалося прочитати")
+        return jsonify({"error": "Не вдалося прочитати «обране»."}), 502
+
+    return jsonify({"favorites": data or {}})
+
+
+@app.route("/api/favorites", methods=["POST"])
+def save_favorites():
+    user, denied = _gate()
+    if denied is not None:
+        return denied
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Синхронізація ще не налаштована на сервері."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    favorites = _valid_uid_time_map(body.get("favorites"))
+    if favorites is None:
+        return jsonify({"error": "Неправильний формат «обраного»."}), 400
+
+    path = _favorites_path(user["sub"])
+    try:
+        _existing, sha = read_json(GH_REPO, GH_WRITE_TOKEN, path)
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, path, favorites,
+            message=f"Синхронізація обраного для {user['email']}",
+            sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("обране: не вдалося зберегти")
+        return jsonify({"error": "Не вдалося зберегти «обране»."}), 502
+
+    return jsonify({"favorites": favorites})
+
+
+# --- «хто я» --------------------------------------------------------
+
+@app.route("/api/me", methods=["GET"])
+def me():
+    """
+    Фронтенд викликає це одразу після входу, щоб вирішити, який екран
+    показати: дошку (є підписка), «підписка неактивна» чи панель адміна.
+    """
+    user = _authenticated_user()
+    if user is None:
+        return jsonify({"error": "потрібен вхід через Google"}), 401
+    return jsonify({"user": user, "entitlement": _entitlement_for(user)})
+
+
+# --- стрічка сповіщень у кабінеті -----------------------------------
+
+def _feed_path(google_sub: str) -> str:
+    return f"feed/{google_sub}.json"
+
+
+@app.route("/api/feed", methods=["GET"])
+def get_feed():
+    """
+    Ті самі нові квартири, що прийшли людині на пошту з її розсилки —
+    щоб їх можна було переглядати тут, а не в пошті. Наповнює цей файл
+    запланований прохід (aggregator/runner.py -> run_profiles).
+    """
+    user, denied = _gate()
+    if denied is not None:
+        return denied
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"items": [], "unread": 0})
+
+    try:
+        data, _sha = read_json(GH_REPO, GH_WRITE_TOKEN, _feed_path(user["sub"]))
+    except GitHubStoreError:
+        log.exception("стрічка: не вдалося прочитати")
+        return jsonify({"error": "Не вдалося прочитати стрічку сповіщень."}), 502
+
+    data = data or {"items": []}
+    return jsonify({"items": data.get("items") or [], "unread": feed.unread_count(data)})
+
+
+@app.route("/api/feed/read", methods=["POST"])
+def mark_feed_read():
+    """Позначити прочитаними окремі записи (`{"uids": [...]}`) або всі (`{"all": true}`)."""
+    user, denied = _gate()
+    if denied is not None:
+        return denied
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Стрічка ще не налаштована на сервері."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    uids = None if body.get("all") else [str(u) for u in (body.get("uids") or [])]
+
+    path = _feed_path(user["sub"])
+    try:
+        data, sha = read_json(GH_REPO, GH_WRITE_TOKEN, path)
+        data = feed.mark_read(data or {"items": []}, uids)
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, path, data,
+            message=f"Стрічка: позначено прочитаним для {user['email']}",
+            sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("стрічка: не вдалося зберегти позначки прочитаного")
+        return jsonify({"error": "Не вдалося оновити стрічку."}), 502
+
+    return jsonify({"items": data.get("items") or [], "unread": feed.unread_count(data)})
+
+
+# --- запит доступу від звичайного користувача -----------------------
+
+@app.route("/api/access-request", methods=["POST"])
+def access_request():
+    """
+    Людина ввійшла, але підписки не має — може лишити прохання, яке
+    адмін побачить у своїй панелі. Один запис на пошту (повторне
+    натискання лише оновлює повідомлення й час).
+    """
+    user = _authenticated_user()
+    if user is None:
+        return jsonify({"error": "потрібен вхід через Google"}), 401
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Сервер ще не налаштований приймати запити."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    message = str(body.get("message") or "").strip()[:500]
+    email_n = entitlements.normalize_email(user.get("email"))
+
+    try:
+        store, sha = read_json(GH_REPO, GH_WRITE_TOKEN, _ACCESS_REQUESTS_PATH)
+        store = dict(store or {})
+        store[email_n] = {
+            "email": user.get("email"),
+            "name": user.get("name"),
+            "message": message,
+            "requested_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, _ACCESS_REQUESTS_PATH, store,
+            message=f"Запит доступу: {user.get('email')}", sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("запит доступу: не вдалося зберегти")
+        return jsonify({"error": "Не вдалося надіслати запит. Спробуй пізніше."}), 502
+
+    return jsonify({"ok": True})
+
+
+# --- панель адміна: керування підписками ----------------------------
+
+@app.route("/api/admin/subscriptions", methods=["GET"])
+def admin_list_subscriptions():
+    if _admin_user() is None:
+        return jsonify({"error": "лише для адміністратора"}), 403
+    try:
+        return jsonify({"subscriptions": _read_subscription_store()})
+    except GitHubStoreError:
+        log.exception("адмін: не вдалося прочитати підписки")
+        return jsonify({"error": "Не вдалося прочитати підписки."}), 502
+
+
+@app.route("/api/admin/subscriptions", methods=["POST"])
+def admin_grant_subscription():
+    admin = _admin_user()
+    if admin is None:
+        return jsonify({"error": "лише для адміністратора"}), 403
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Сховище підписок не налаштоване на сервері."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    email = str(body.get("email") or "").strip()
+    if "@" not in email:
+        return jsonify({"error": "Вкажи коректну пошту."}), 400
+
+    try:
+        store, sha = read_json(GH_REPO, GH_WRITE_TOKEN, _SUBSCRIPTIONS_PATH)
+        store = entitlements.upsert(
+            store or {}, email,
+            status=str(body.get("status") or entitlements.STATUS_ACTIVE),
+            plan=str(body.get("plan") or "pro"),
+            expires_utc=(str(body.get("expires_utc")).strip() or None) if body.get("expires_utc") else None,
+            note=str(body.get("note") or ""),
+            granted_by=admin.get("email", ""),
+        )
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except GitHubStoreError:
+        log.exception("адмін: не вдалося прочитати підписки перед записом")
+        return jsonify({"error": "Не вдалося зберегти підписку."}), 502
+
+    try:
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, _SUBSCRIPTIONS_PATH, store,
+            message=f"Підписка: {email} <- {admin.get('email')}", sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("адмін: не вдалося записати підписки")
+        return jsonify({"error": "Не вдалося зберегти підписку."}), 502
+
+    return jsonify({"subscriptions": store})
+
+
+@app.route("/api/admin/subscriptions", methods=["DELETE"])
+def admin_revoke_subscription():
+    admin = _admin_user()
+    if admin is None:
+        return jsonify({"error": "лише для адміністратора"}), 403
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"error": "Сховище підписок не налаштоване на сервері."}), 500
+
+    body = request.get_json(force=True, silent=True) or {}
+    email = str(body.get("email") or "").strip()
+
+    try:
+        store, sha = read_json(GH_REPO, GH_WRITE_TOKEN, _SUBSCRIPTIONS_PATH)
+        store = entitlements.remove(store or {}, email)
+        write_json(
+            GH_REPO, GH_WRITE_TOKEN, _SUBSCRIPTIONS_PATH, store,
+            message=f"Підписка знята: {email} ({admin.get('email')})", sha=sha,
+        )
+    except GitHubStoreError:
+        log.exception("адмін: не вдалося зняти підписку")
+        return jsonify({"error": "Не вдалося зняти підписку."}), 502
+
+    return jsonify({"subscriptions": store})
+
+
+@app.route("/api/admin/access-requests", methods=["GET"])
+def admin_list_access_requests():
+    if _admin_user() is None:
+        return jsonify({"error": "лише для адміністратора"}), 403
+    if not (GH_WRITE_TOKEN and GH_REPO):
+        return jsonify({"requests": []})
+    try:
+        store, _sha = read_json(GH_REPO, GH_WRITE_TOKEN, _ACCESS_REQUESTS_PATH)
+    except GitHubStoreError:
+        log.exception("адмін: не вдалося прочитати запити доступу")
+        return jsonify({"error": "Не вдалося прочитати запити."}), 502
+    return jsonify({"requests": list((store or {}).values())})
 
 
 @app.route("/api/health", methods=["GET"])
