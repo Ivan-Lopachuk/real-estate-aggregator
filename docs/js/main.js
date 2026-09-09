@@ -3,14 +3,19 @@
  *   • готує вхід через Google;
  *   • після входу питає сервер «що мені дозволено» (/api/me);
  *   • показує потрібний екран: лендінг → підписка неактивна → сайт;
- *   • простий роутер за адресним «хешем»: #/ , #/profile , #/admin.
+ *   • роутер за адресним «хешем»:
+ *       #/            — головна (дошка з AI-пошуком)
+ *       #/subscription — розсилка
+ *       #/favorites    — обране
+ *       #/profile      — мій профіль (підписка + стрічка)
+ *       #/admin        — панель адміністратора
  */
 
 import { fetchMe, loadSession } from "./api.js";
 import { initAuth, onAuthChange, signIn, signOut } from "./auth.js";
-import { el, clear, rawSvg, revealOnScroll } from "./ui.js";
-import { loadData, renderBoard, syncFromServer, resetToBase } from "./board.js";
-import { renderProfile, renderLocked, refreshFeedBadge, feedUnread } from "./profile.js";
+import { el, clear, icon, rawSvg, revealOnScroll } from "./ui.js";
+import { loadData, renderBoard, syncFromServer } from "./board.js";
+import { renderProfile, renderSubscription, renderLocked, refreshFeedBadge, feedUnread } from "./profile.js";
 import { renderAdmin } from "./admin.js";
 
 const app = document.getElementById("app");
@@ -91,27 +96,78 @@ function paintNav() {
 
   const links = el("div", { class: "nav__links" });
   if (entitlement && entitlement.active) {
-    links.appendChild(navLink("#/", "Дошка"));
-    const badge = feedUnread() > 0 ? el("span", { class: "nav__badge", text: String(feedUnread()) }) : null;
-    links.appendChild(navLink("#/profile", "Кабінет", badge));
+    links.appendChild(navLink("#/", "На головну"));
+    links.appendChild(navLink("#/subscription", "Розсилка"));
     if (entitlement.is_admin) links.appendChild(navLink("#/admin", "Адмін"));
   }
   nav.appendChild(links);
-
-  const chip = el("div", { class: "user-chip" }, [
-    session.picture ? el("img", { src: session.picture, alt: "", referrerpolicy: "no-referrer" }) : null,
-    el("span", { text: session.name || session.email }),
-  ]);
-  nav.appendChild(el("div", { class: "nav__right" }, [
-    chip,
-    el("button", { class: "btn btn-ghost btn-sm", text: "Вийти", onclick: signOut }),
-  ]));
+  nav.appendChild(userMenu(session));
 }
 
 function navLink(hash, text, extra) {
-  const active = (location.hash || "#/") === hash;
+  const cur = location.hash || "#/";
+  const active = hash === "#/" ? cur === "#/" : cur.startsWith(hash);
   return el("a", { class: "nav__link" + (active ? " is-active" : ""), href: hash }, [text, extra]);
 }
+
+// Випадне меню на аватарі + ніку: «Мій профіль», «Обране», «Вийти».
+// Відкривається наведенням (десктоп) і кліком (телефон), пункти
+// виринають з невеликою затримкою один за одним (анімація — у CSS).
+function userMenu(session) {
+  const unread = feedUnread();
+  const initials = (session.name || session.email || "?").trim().slice(0, 1).toUpperCase();
+
+  const trigger = el("button", {
+    class: "user-chip", type: "button", "aria-haspopup": "true", "aria-expanded": "false",
+  }, [
+    session.picture
+      ? el("img", { src: session.picture, alt: "", referrerpolicy: "no-referrer" })
+      : el("span", { class: "user-chip__ph", text: initials }),
+    el("span", { class: "user-chip__name", text: session.name || session.email }),
+    icon("chevron", { size: 15, stroke: 2.4 }),
+    unread ? el("span", { class: "user-chip__dot" }) : null,
+  ]);
+
+  const wrap = el("div", { class: "user-menu" });
+  const close = () => { wrap.classList.remove("is-open"); trigger.setAttribute("aria-expanded", "false"); };
+
+  const menuItem = (iconName, label, hash, extra) => el("a", {
+    class: "user-menu__item", href: hash, role: "menuitem",
+    onclick: close,
+  }, [icon(iconName, { size: 17 }), el("span", { text: label }), extra || null]);
+
+  const list = el("div", { class: "user-menu__list", role: "menu" }, [
+    menuItem("user", "Мій профіль", "#/profile",
+      unread ? el("span", { class: "nav__badge", text: String(unread) }) : null),
+    menuItem("star", "Обране", "#/favorites"),
+    el("div", { class: "user-menu__sep" }),
+    el("button", { class: "user-menu__item", type: "button", role: "menuitem",
+      onclick: () => { close(); signOut(); } }, [icon("logout", { size: 17 }), el("span", { text: "Вийти" })]),
+  ]);
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (wrap.classList.contains("is-open")) close();
+    else { wrap.classList.add("is-open"); trigger.setAttribute("aria-expanded", "true"); }
+  });
+
+  wrap.appendChild(trigger);
+  wrap.appendChild(list);
+  return wrap;
+}
+
+// Один спільний обробник: клік поза відкритим меню або Esc — закриває.
+document.addEventListener("click", (e) => {
+  document.querySelectorAll(".user-menu.is-open").forEach((m) => {
+    if (!m.contains(e.target)) {
+      m.classList.remove("is-open");
+      m.querySelector(".user-chip")?.setAttribute("aria-expanded", "false");
+    }
+  });
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") document.querySelectorAll(".user-menu.is-open").forEach((m) => m.classList.remove("is-open"));
+});
 
 // --- роутер -------------------------------------------------------
 
@@ -132,10 +188,13 @@ function route() {
   if (hash.startsWith("#/profile")) {
     renderProfile(app, entitlement);
     refreshFeedBadge().then(paintNav);
+  } else if (hash.startsWith("#/subscription")) {
+    renderSubscription(app, entitlement);
+  } else if (hash.startsWith("#/favorites")) {
+    renderBoard(app, { mode: "favorites" });
   } else if (hash.startsWith("#/admin") && entitlement.is_admin) {
     renderAdmin(app);
   } else {
-    resetToBase();
     renderBoard(app);
   }
   playEnter();

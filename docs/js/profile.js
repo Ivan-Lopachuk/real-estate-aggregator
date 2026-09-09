@@ -46,16 +46,12 @@ export function renderLocked(root, entitlement) {
   root.appendChild(box);
 }
 
-// --- кабінет -------------------------------------------------------
+// --- мій профіль: підписка + стрічка -----------------------------
 
 export function renderProfile(root, entitlement) {
   clear(root);
-  root.appendChild(el("h1", { class: "page-title", text: "Кабінет" }));
+  root.appendChild(el("h1", { class: "page-title", text: "Мій профіль" }));
   root.appendChild(subscriptionCard(entitlement));
-
-  const subPanel = el("section", { class: "panel", id: "subPanel" });
-  root.appendChild(subPanel);
-  renderSubscriptionForm(subPanel);
 
   const feedPanel = el("section", { class: "panel", id: "feedPanel" }, [
     el("div", { class: "panel__head" }, [
@@ -63,12 +59,25 @@ export function renderProfile(root, entitlement) {
       el("button", { class: "btn btn-sm", id: "feedReadAll", text: "Позначити всі прочитаними",
         onclick: () => markFeedRead({ all: true }).then(() => loadFeed(feedPanel)).catch(() => {}) }),
     ]),
-    el("p", { class: "muted", text:
-      "Те саме, що приходить тобі на пошту з розсилки — щоб не перевіряти пошту." }),
+    el("p", { class: "muted" }, [
+      "Те саме, що приходить тобі на пошту з ",
+      el("a", { href: "#/subscription", text: "розсилки" }),
+      " — щоб не перевіряти пошту.",
+    ]),
     el("div", { class: "feed", id: "feedList" }),
   ]);
   root.appendChild(feedPanel);
   loadFeed(feedPanel);
+}
+
+// --- розсилка: тільки форма критеріїв ---------------------------
+
+export function renderSubscription(root, _entitlement) {
+  clear(root);
+  root.appendChild(el("h1", { class: "page-title", text: "Розсилка" }));
+  const panel = el("section", { class: "panel", id: "subPanel" });
+  root.appendChild(panel);
+  renderSubscriptionForm(panel);
 }
 
 function subscriptionCard(e) {

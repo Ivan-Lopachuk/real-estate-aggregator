@@ -229,11 +229,19 @@ function emptyState(iconName, title, text, withSuggestions) {
 
 // --- рендер --------------------------------------------------------
 
-export function renderBoard(root) {
+export function renderBoard(root, opts = {}) {
   rootEl = root;
   clear(root);
+  mode = opts.mode === "favorites" ? "favorites" : baseMode();
 
-  root.appendChild(el("section", { class: "search" }, [
+  if (mode === "favorites") {
+    root.appendChild(el("div", { class: "page-head" }, [
+      el("a", { class: "back-link", href: "#/" }, [icon("chevron", { size: 16, stroke: 2.4 }), " На головну"]),
+      el("h1", { class: "page-title", text: "Обране" }),
+      el("p", { class: "muted", text: "Оголошення, які ти позначив зіркою. Синхронізуються між пристроями." }),
+    ]));
+  } else {
+    root.appendChild(el("section", { class: "search" }, [
     el("h1", { class: "search__title", text: "Знайди квартиру в Бельгії за секунди" }),
     el("p", { class: "search__subtitle", text:
       "Напиши, що шукаєш — AI перевірить Immoweb і Immovlan та покаже результати одразу." }),
@@ -259,7 +267,8 @@ export function renderBoard(root) {
       return form;
     })(),
     el("div", { class: "search__reply", id: "chatReply", hidden: "" }),
-  ]));
+    ]));
+  }
 
   root.appendChild(el("div", { class: "board-bar", id: "boardBar", hidden: "" }, [
     el("span", { class: "board-bar__count", id: "boardCount" }),
@@ -358,10 +367,7 @@ function runSearch(text) {
     })
     .catch((err) => {
       if (err.code === "unauthorized") { showReply("Сесія завершилась — увійди ще раз.", true); toast("Увійди ще раз", "error"); return; }
-      if (err.code === "no_subscription") { showReply("Для AI-пошуку потрібна активна підписка.", true); location.hash = "#/profile"; return; }
+      if (err.code === "no_subscription") { showReply("Для AI-пошуку потрібна активна підписка.", true); location.hash = "#/subscription"; return; }
       showReply(err.message, true);
     });
 }
-
-/** Повертає дошку до «базового» стану (список із листа, результати пошуку або порожньо). */
-export function resetToBase() { mode = baseMode(); }

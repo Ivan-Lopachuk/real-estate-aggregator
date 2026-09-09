@@ -41,6 +41,9 @@ const ICON_PATHS = {
   inbox: '<path d="M3 13h4l1.5 3h7L17 13h4"/><path d="M4.2 13 6 5.4a2 2 0 0 1 1.95-1.5h8.1A2 2 0 0 1 18 5.4L19.8 13v4.6a2 2 0 0 1-2 2H6.2a2 2 0 0 1-2-2z"/>',
   bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.6 2.2a.6.6 0 0 1-.5 1H4.9a.6.6 0 0 1-.5-1z"/><path d="M9.5 20.5a2.5 2.5 0 0 0 5 0"/>',
   lock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  chevron: '<path d="m6 9 6 6 6-6"/>',
+  user: '<circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c1.2-3.7 4-5.5 7.2-5.5s6 1.8 7.2 5.5"/>',
+  logout: '<path d="M15 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h9"/><path d="m16 8.5 3.5 3.5-3.5 3.5"/><path d="M19.5 12H9.5"/>',
 };
 
 /** SVG-іконка з набору. opts: { size, stroke } */

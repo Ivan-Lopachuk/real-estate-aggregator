@@ -203,20 +203,118 @@ img { max-width: 100%; }
   justify-content: center;
   vertical-align: 1px;
 }
-.nav__right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+/* --- меню користувача (аватар + ник + випадний список) ---------- */
+
+.user-menu { position: relative; margin-left: auto; }
 .user-chip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 14px 5px 5px;
+  padding: 5px 12px 5px 5px;
   border-radius: 999px;
   background: var(--surface-2);
   border: 1px solid var(--border);
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
   color: var(--ink);
+  cursor: pointer;
+  transition: border-color .14s ease, background-color .14s ease;
 }
-.user-chip img { width: 26px; height: 26px; border-radius: 50%; display: block; }
+.user-chip:hover { border-color: var(--border-strong); background: var(--surface); }
+.user-chip img,
+.user-chip__ph {
+  width: 27px; height: 27px; border-radius: 50%;
+  display: grid; place-items: center; flex: none;
+}
+.user-chip__ph { background: var(--primary); color: var(--primary-ink); font-weight: 800; font-size: 13px; }
+.user-chip__name { max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-chip > .icon { color: var(--text-soft); transition: transform .2s ease; }
+.user-menu.is-open .user-chip > .icon { transform: rotate(180deg); }
+.user-chip__dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex: none;
+  box-shadow: 0 0 0 2px var(--surface-2);
+}
+
+.user-menu__list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  min-width: 210px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(.96);
+  transform-origin: top right;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  z-index: 40;
+}
+/* невидимий «місток», щоб курсор не втрачав :hover між чипом і списком */
+.user-menu__list::before { content: ""; position: absolute; left: 0; right: 0; top: -14px; height: 14px; }
+.user-menu.is-open > .user-menu__list,
+.user-menu:focus-within > .user-menu__list { opacity: 1; visibility: visible; transform: none; }
+@media (hover: hover) {
+  .user-menu:hover > .user-menu__list { opacity: 1; visibility: visible; transform: none; }
+}
+
+.user-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: none;
+  border: none;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity .24s ease, transform .24s ease, background-color .12s ease;
+}
+.user-menu__item > .icon { color: var(--text-soft); flex: none; }
+.user-menu__item:hover { background: var(--surface-2); }
+.user-menu__item:hover > .icon { color: var(--primary-strong); }
+.user-menu__item .nav__badge { margin-left: auto; animation: none; }
+.user-menu__sep {
+  height: 1px; background: var(--border); margin: 6px 6px;
+  opacity: 0; transition: opacity .24s ease;
+}
+.user-menu.is-open .user-menu__item,
+.user-menu.is-open .user-menu__sep,
+.user-menu:focus-within .user-menu__item,
+.user-menu:focus-within .user-menu__sep { opacity: 1; transform: none; }
+@media (hover: hover) {
+  .user-menu:hover .user-menu__item,
+  .user-menu:hover .user-menu__sep { opacity: 1; transform: none; }
+}
+.user-menu__list > *:nth-child(1) { transition-delay: .03s; }
+.user-menu__list > *:nth-child(2) { transition-delay: .07s; }
+.user-menu__list > *:nth-child(4) { transition-delay: .11s; }
+
+/* --- шапка сторінки з кнопкою «назад» -------------------------- */
+
+.page-head { margin-bottom: 20px; }
+.page-head .page-title { margin: 0 0 6px; }
+.back-link {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 13px; font-weight: 600; color: var(--text-soft);
+  text-decoration: none; margin-bottom: 10px;
+}
+.back-link:hover { color: var(--primary-strong); }
+.back-link .icon { transform: rotate(90deg); }
 
 /* --- контейнер сторінки --------------------------------------- */
 
@@ -731,7 +829,6 @@ img { max-width: 100%; }
 
 /* безпечні зони iPhone з «чубчиком» (viewport-fit=cover) */
 .nav { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
-.user-chip span { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* планшети та вузькі ноутбуки */
 @media (max-width: 900px) {
@@ -763,6 +860,7 @@ img { max-width: 100%; }
   .nav { gap: 10px 12px; }
   .nav__links { order: 3; width: 100%; margin: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
   .nav__links::-webkit-scrollbar { display: none; }
+  .user-chip__name { max-width: 26vw; }
   .btn-lg { padding: 15px 26px; font-size: 15px; }
   .search__bar { flex-direction: column; }
   .search__bar .btn { justify-content: center; }
@@ -783,9 +881,12 @@ img { max-width: 100%; }
 }
 
 /* дуже вузькі екрани / годинники */
+@media (max-width: 380px) {
+  .user-chip__name { display: none; }
+}
 @media (max-width: 340px) {
   .hero__title { font-size: 26px; }
-  .brand { font-size: 16px; }
+  .brand__name { font-size: 17px; }
   .btn { padding: 11px 18px; }
 }
 
