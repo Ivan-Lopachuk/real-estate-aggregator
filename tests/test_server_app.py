@@ -66,10 +66,13 @@ class ParseListedAtTests(unittest.TestCase):
 
 class ApplyRecencyTests(unittest.TestCase):
     def test_keeps_recent_and_missing_dates_drops_old(self):
+        # Дати рахуємо відносно «зараз», щоб тест не старів із часом.
+        from datetime import datetime, timedelta, timezone
+        now = datetime.now(timezone.utc)
         recent = Listing(site="immoweb", site_listing_id="1", url="u1", title="t1",
-                          listed_at="2026-09-03T13:49:41.693Z")
+                          listed_at=(now - timedelta(hours=6)).isoformat())
         old = Listing(site="zimmo", site_listing_id="2", url="u2", title="t2",
-                       listed_at="2026-08-01T07:54:11+00:00")
+                       listed_at=(now - timedelta(days=30)).isoformat())
         unknown = Listing(site="immoweb", site_listing_id="3", url="u3", title="t3", listed_at=None)
 
         kept = chat_app._apply_recency([recent, old, unknown], 2)
@@ -80,23 +83,163 @@ class ApplyRecencyTests(unittest.TestCase):
         self.assertEqual(chat_app._apply_recency(listings, None), listings)
 
 
-class AccessOkTests(unittest.TestCase):
-    def test_no_access_code_configured_denies_by_default(self):
-        # ACCESS_CODE не задано в тестовому середовищі (нема env-змінної) —
-        # доступ має бути закритий за замовчуванням, а не відкритий.
-        chat_app.ACCESS_CODE = ""
-        with chat_app.app.test_request_context(headers={"X-Access-Code": ""}):
-            self.assertFalse(chat_app._access_ok())
+class GateTests(unittest.TestCase):
+    """
+    _gate() / _subscribed_user() — головний вартовий закритих ендпоїнтів:
+    потрібен і вхід через Google, і активна підписка (або статус адміна).
+    Раніше тут був окремий "код доступу" (X-Access-Code) — його прибрано.
+    """
 
-    def test_matching_header_is_accepted(self):
-        chat_app.ACCESS_CODE = "secret"
-        with chat_app.app.test_request_context(headers={"X-Access-Code": "secret"}):
-            self.assertTrue(chat_app._access_ok())
+    def setUp(self):
+        chat_app.ADMIN_EMAILS = "owner@gmail.com"
 
-    def test_wrong_header_is_rejected(self):
-        chat_app.ACCESS_CODE = "secret"
-        with chat_app.app.test_request_context(headers={"X-Access-Code": "wrong"}):
-            self.assertFalse(chat_app._access_ok())
+    def test_no_login_returns_401(self):
+        with patch.object(chat_app, "_authenticated_user", return_value=None):
+            with chat_app.app.test_request_context():
+                _user, denied = chat_app._gate()
+        self.assertEqual(denied[1], 401)
+
+    def test_logged_in_without_subscription_returns_402(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "x@y.com", "sub": "1"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}):
+            with chat_app.app.test_request_context():
+                user, denied = chat_app._gate()
+        self.assertIsNone(user)
+        self.assertEqual(denied[1], 402)
+
+    def test_active_subscriber_passes(self):
+        store = {"x@y.com": {"status": "active", "plan": "pro", "expires_utc": None}}
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "x@y.com", "sub": "1"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value=store):
+            with chat_app.app.test_request_context():
+                user, denied = chat_app._gate()
+        self.assertIsNone(denied)
+        self.assertEqual(user["email"], "x@y.com")
+
+    def test_admin_passes_without_any_subscription_file(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "owner@gmail.com", "sub": "9"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}):
+            with chat_app.app.test_request_context():
+                user, denied = chat_app._gate()
+        self.assertIsNone(denied)
+        self.assertEqual(user["email"], "owner@gmail.com")
+
+
+class MeEndpointTests(unittest.TestCase):
+    def setUp(self):
+        self.client = chat_app.app.test_client()
+        chat_app.ADMIN_EMAILS = "owner@gmail.com"
+
+    def test_without_login_is_401(self):
+        with patch.object(chat_app, "_authenticated_user", return_value=None):
+            resp = self.client.get("/api/me")
+        self.assertEqual(resp.status_code, 401)
+
+    def test_reports_admin_entitlement(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "owner@gmail.com", "sub": "9"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}):
+            resp = self.client.get("/api/me", headers={"Authorization": "Bearer x"})
+        data = resp.get_json()
+        self.assertTrue(data["entitlement"]["active"])
+        self.assertTrue(data["entitlement"]["is_admin"])
+
+    def test_reports_inactive_for_stranger(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "s@x.com", "sub": "2"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}):
+            resp = self.client.get("/api/me", headers={"Authorization": "Bearer x"})
+        self.assertFalse(resp.get_json()["entitlement"]["active"])
+
+
+class AdminSubscriptionEndpointTests(unittest.TestCase):
+    def setUp(self):
+        self.client = chat_app.app.test_client()
+        chat_app.ADMIN_EMAILS = "owner@gmail.com"
+        chat_app.GH_WRITE_TOKEN = "tok"
+        chat_app.GH_REPO = "me/repo"
+
+    def test_non_admin_is_403(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "s@x.com", "sub": "2"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}):
+            resp = self.client.get("/api/admin/subscriptions", headers={"Authorization": "Bearer x"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_can_grant(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "owner@gmail.com", "sub": "9"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}), \
+             patch.object(chat_app, "read_json", return_value=({}, "sha")), \
+             patch.object(chat_app, "write_json") as mock_write:
+            resp = self.client.post(
+                "/api/admin/subscriptions", headers={"Authorization": "Bearer x"},
+                json={"email": "Friend@Example.com", "expires_utc": "2026-12-31T00:00:00+00:00"},
+            )
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("friend@example.com", resp.get_json()["subscriptions"])
+        mock_write.assert_called_once()
+
+    def test_admin_grant_rejects_bad_date(self):
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "owner@gmail.com", "sub": "9"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value={}), \
+             patch.object(chat_app, "read_json", return_value=({}, "sha")), \
+             patch.object(chat_app, "write_json"):
+            resp = self.client.post(
+                "/api/admin/subscriptions", headers={"Authorization": "Bearer x"},
+                json={"email": "friend@example.com", "expires_utc": "колись"},
+            )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_admin_can_revoke(self):
+        store = {"friend@example.com": {"status": "active"}}
+        with patch.object(chat_app, "_authenticated_user", return_value={"email": "owner@gmail.com", "sub": "9"}), \
+             patch.object(chat_app, "_read_subscription_store", return_value=store), \
+             patch.object(chat_app, "read_json", return_value=(store, "sha")), \
+             patch.object(chat_app, "write_json") as mock_write:
+            resp = self.client.delete(
+                "/api/admin/subscriptions", headers={"Authorization": "Bearer x"},
+                json={"email": "friend@example.com"},
+            )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn("friend@example.com", resp.get_json()["subscriptions"])
+        mock_write.assert_called_once()
+
+
+class FeedEndpointTests(unittest.TestCase):
+    def setUp(self):
+        self.client = chat_app.app.test_client()
+        chat_app.ADMIN_EMAILS = "owner@gmail.com"
+        chat_app.GH_WRITE_TOKEN = "tok"
+        chat_app.GH_REPO = "me/repo"
+        self._gate_patch = patch.object(
+            chat_app, "_gate", return_value=({"sub": "42", "email": "owner@gmail.com"}, None)
+        )
+        self._gate_patch.start()
+
+    def tearDown(self):
+        self._gate_patch.stop()
+
+    def test_get_feed_returns_items_and_unread(self):
+        data = {"items": [{"uid": "immoweb:1", "read": False}, {"uid": "immoweb:2", "read": True}]}
+        with patch.object(chat_app, "read_json", return_value=(data, "sha")):
+            resp = self.client.get("/api/feed", headers={"Authorization": "Bearer x"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json()["unread"], 1)
+
+    def test_mark_all_read(self):
+        data = {"items": [{"uid": "immoweb:1", "read": False}]}
+        with patch.object(chat_app, "read_json", return_value=(data, "sha")), \
+             patch.object(chat_app, "write_json") as mock_write:
+            resp = self.client.post(
+                "/api/feed/read", headers={"Authorization": "Bearer x"}, json={"all": True}
+            )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_json()["unread"], 0)
+        self.assertEqual(mock_write.call_args[0][2], "feed/42.json")
+
+    def test_chat_without_subscription_is_blocked(self):
+        self._gate_patch.stop()
+        with patch.object(chat_app, "_gate", return_value=(None, ("Потрібна підписка", 402))):
+            resp = self.client.post("/api/chat", json={"message": "привіт"})
+        self.assertEqual(resp.status_code, 402)
+        self._gate_patch.start()
 
 
 class VerifyGoogleTokenTests(unittest.TestCase):
@@ -364,8 +507,14 @@ class SeenEndpointTests(unittest.TestCase):
             chat_app, "_authenticated_user", return_value={"sub": "42", "email": "a@b.com"}
         )
         self._user_patch.start()
+        # Ці ендпоїнти тепер за підпискою (_gate) — вважаємо користувача активним.
+        self._ent_patch = patch.object(
+            chat_app, "_entitlement_for", return_value={"active": True, "is_admin": False}
+        )
+        self._ent_patch.start()
 
     def tearDown(self):
+        self._ent_patch.stop()
         self._user_patch.stop()
 
     def test_get_returns_empty_map_when_no_file_yet(self):
@@ -424,8 +573,13 @@ class FavoritesEndpointTests(unittest.TestCase):
             chat_app, "_authenticated_user", return_value={"sub": "42", "email": "a@b.com"}
         )
         self._user_patch.start()
+        self._ent_patch = patch.object(
+            chat_app, "_entitlement_for", return_value={"active": True, "is_admin": False}
+        )
+        self._ent_patch.start()
 
     def tearDown(self):
+        self._ent_patch.stop()
         self._user_patch.stop()
 
     def test_get_returns_empty_map_when_no_file_yet(self):

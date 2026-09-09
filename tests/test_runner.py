@@ -13,6 +13,7 @@ from aggregator.config import (
 from aggregator.database import Database
 from aggregator.models import Listing
 from aggregator.proximus import FiberAvailability
+from aggregator import feed as feed_module
 from aggregator.runner import _dashboard_link_for_batch, _dashboard_link_for_uids, run_profiles
 
 
@@ -114,6 +115,7 @@ class RunProfilesTests(unittest.TestCase):
         self.db_path = self.dir / "listings.db"
         self.profiles_dir = self.dir / "profiles"
         self.profiles_dir.mkdir()
+        self.feed_dir = self.dir / "feed"
         self.config = _make_config(self.db_path)
 
     def tearDown(self):
@@ -124,20 +126,33 @@ class RunProfilesTests(unittest.TestCase):
         with patch("aggregator.runner.get_scraper", return_value=_FakeScraper), \
              patch("aggregator.runner.EmailNotifier") as mock_notifier_cls:
             mock_notifier_cls.return_value.notify.return_value = None
-            sent = run_profiles(self.config, profiles_dir=self.profiles_dir)
+            sent = run_profiles(self.config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
 
         self.assertEqual(sent, 1)
         mock_notifier_cls.assert_called_once()
         called_settings = mock_notifier_cls.call_args[0][0]
         self.assertEqual(called_settings.to_addresses, ["friend@example.com"])
 
+    def test_writes_notified_listings_into_the_cabinet_feed(self):
+        _write_profile(self.profiles_dir, google_sub="abc123")
+        with patch("aggregator.runner.get_scraper", return_value=_FakeScraper), \
+             patch("aggregator.runner.EmailNotifier") as mock_notifier_cls:
+            mock_notifier_cls.return_value.notify.return_value = None
+            run_profiles(
+                self.config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir
+            )
+
+        stored = feed_module.load_feed(self.feed_dir, "abc123")
+        self.assertEqual([i["uid"] for i in stored["items"]], ["immoweb:1"])
+        self.assertEqual(feed_module.unread_count(stored), 1)
+
     def test_second_run_right_after_sends_nothing_new(self):
         _write_profile(self.profiles_dir)
         with patch("aggregator.runner.get_scraper", return_value=_FakeScraper), \
              patch("aggregator.runner.EmailNotifier") as mock_notifier_cls:
             mock_notifier_cls.return_value.notify.return_value = None
-            run_profiles(self.config, profiles_dir=self.profiles_dir)
-            second = run_profiles(self.config, profiles_dir=self.profiles_dir)
+            run_profiles(self.config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
+            second = run_profiles(self.config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
 
         # Профіль щойно перевіряли (interval_hours=1) — вдруге ще не час.
         self.assertEqual(second, 0)
@@ -153,7 +168,7 @@ class RunProfilesTests(unittest.TestCase):
         config = _make_config(self.db_path)
         config.notifications.email = None
         with patch("aggregator.runner.get_scraper", return_value=_FakeScraper):
-            sent = run_profiles(config, profiles_dir=self.profiles_dir)
+            sent = run_profiles(config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
         self.assertEqual(sent, 0)
 
     def test_email_gets_a_dashboard_link_when_webpage_enabled(self):
@@ -165,7 +180,7 @@ class RunProfilesTests(unittest.TestCase):
         with patch("aggregator.runner.get_scraper", return_value=_FakeScraper), \
              patch("aggregator.runner.EmailNotifier") as mock_notifier_cls:
             mock_notifier_cls.return_value.notify.return_value = None
-            run_profiles(config, profiles_dir=self.profiles_dir)
+            run_profiles(config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
 
         mock_notifier_cls.assert_called_once()
         page_url = mock_notifier_cls.call_args[0][1]
@@ -181,7 +196,7 @@ class RunProfilesTests(unittest.TestCase):
         with patch("aggregator.runner.get_scraper", return_value=_FakeScraper), \
              patch("aggregator.runner.EmailNotifier") as mock_notifier_cls:
             mock_notifier_cls.return_value.notify.return_value = None
-            run_profiles(self.config, profiles_dir=self.profiles_dir)
+            run_profiles(self.config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
 
         page_url = mock_notifier_cls.call_args[0][1]
         self.assertEqual(page_url, "")
@@ -194,7 +209,7 @@ class RunProfilesTests(unittest.TestCase):
              patch("aggregator.runner.EmailNotifier") as mock_notifier_cls, \
              patch("aggregator.runner.proximus.check_fiber", return_value=fake_result) as mock_check:
             mock_notifier_cls.return_value.notify.return_value = None
-            run_profiles(config, profiles_dir=self.profiles_dir)
+            run_profiles(config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
 
         mock_check.assert_called_once_with("Kerkstraat", "1", "9000", "Gent")
         with Database(self.db_path) as db:
@@ -207,7 +222,7 @@ class RunProfilesTests(unittest.TestCase):
              patch("aggregator.runner.EmailNotifier") as mock_notifier_cls, \
              patch("aggregator.runner.proximus.check_fiber") as mock_check:
             mock_notifier_cls.return_value.notify.return_value = None
-            run_profiles(config, profiles_dir=self.profiles_dir)
+            run_profiles(config, profiles_dir=self.profiles_dir, feed_dir=self.feed_dir)
 
         mock_check.assert_not_called()
 

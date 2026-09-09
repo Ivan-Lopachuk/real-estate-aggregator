@@ -18,6 +18,7 @@ import time
 from datetime import datetime, timezone
 from urllib.parse import quote
 
+from . import feed as feed_module
 from . import profiles as profiles_module
 from . import proximus, webpage
 from .config import Config
@@ -197,7 +198,9 @@ def run_once(config: Config) -> int:
     return new_count
 
 
-def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
+def run_profiles(
+    config: Config, profiles_dir: str = "profiles", feed_dir: str = "feed"
+) -> int:
     """
     Окремий прохід — незалежний від run_once() і config.yaml -> search.
 
@@ -272,6 +275,23 @@ def run_profiles(config: Config, profiles_dir: str = "profiles") -> int:
                     except Exception:
                         log.exception("профіль %s: не вдалося надіслати лист", profile.id)
                         continue  # не позначаємо — спробуємо знову наступного разу
+
+                    # Ті самі оголошення додаємо у стрічку кабінету
+                    # (feed/<google_sub>.json) — щоб їх було видно на
+                    # сайті, а не лише в пошті. Збій тут не має ламати
+                    # розсилку, тож ловимо все.
+                    if profile.google_sub:
+                        try:
+                            existing = feed_module.load_feed(feed_dir, profile.google_sub)
+                            updated = feed_module.append_items(
+                                existing, to_notify,
+                                datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                            )
+                            feed_module.save_feed(feed_dir, profile.google_sub, updated)
+                        except Exception:
+                            log.exception(
+                                "профіль %s: не вдалося оновити стрічку кабінету", profile.id
+                            )
                 db.mark_notified_for_profile(profile.id, new_for_profile)
 
             profiles_module.mark_checked(profile)
