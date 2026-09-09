@@ -40,8 +40,12 @@
   --font: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Нічна тема. Застосовується у двох випадках:
+   1) система стоїть на «темній», а людина не обрала світлу вручну;
+   2) людина сама натиснула кнопку «нічна тема» (data-theme="dark").
+   Обидва набори однакові — просто різні «замки». */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #100d38;
     --bg-soft: #171449;
     --surface: #1a1652;
@@ -65,6 +69,30 @@
     --shadow-md: 0 18px 50px rgba(0, 0, 0, .5);
     --glow: radial-gradient(60% 55% at 50% 0%, rgba(47, 227, 228, .18), transparent 70%);
   }
+}
+:root[data-theme="dark"] {
+  --bg: #100d38;
+  --bg-soft: #171449;
+  --surface: #1a1652;
+  --surface-2: #211d5f;
+  --ink: #ffffff;
+  --text: #f1f1fb;
+  --text-soft: #a7a6cd;
+  --border: #322d70;
+  --border-strong: #3d3880;
+  --primary: #2fe3e4;
+  --primary-strong: #57ebec;
+  --primary-ink: #08183b;
+  --primary-soft: rgba(47, 227, 228, .14);
+  --danger: #ff6b81;
+  --danger-soft: rgba(255, 107, 129, .14);
+  --ok: #3ddb9b;
+  --ok-soft: rgba(61, 219, 155, .15);
+  --fiber: #6bb8f5;
+  --fiber-soft: rgba(107, 184, 245, .16);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, .4);
+  --shadow-md: 0 18px 50px rgba(0, 0, 0, .5);
+  --glow: radial-gradient(60% 55% at 50% 0%, rgba(47, 227, 228, .18), transparent 70%);
 }
 
 * { box-sizing: border-box; }
@@ -176,8 +204,32 @@ img { max-width: 100%; }
   background: linear-gradient(120deg, var(--primary-strong), #1170d8);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.nav__cta { margin-left: auto; }
+.nav__cta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .nav__links { display: flex; align-items: center; gap: 4px; margin-right: auto; }
+
+/* кнопка денної / нічної теми */
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  margin-left: 4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: color .16s ease, border-color .16s ease, transform .25s ease, background-color .16s ease;
+}
+.theme-toggle:hover { color: var(--primary-strong); border-color: var(--primary); transform: rotate(-18deg); }
+.theme-toggle:active { transform: rotate(-18deg) scale(.92); }
+
+/* короткий плавний перехід кольорів у мить перемикання теми */
+.theme-anim, .theme-anim *, .theme-anim *::before, .theme-anim *::after {
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease, fill .3s ease, box-shadow .3s ease !important;
+  transition-delay: 0s !important;
+}
 .nav__link {
   position: relative;
   text-decoration: none;

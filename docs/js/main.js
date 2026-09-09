@@ -13,6 +13,7 @@
 
 import { fetchMe, loadSession } from "./api.js";
 import { initAuth, onAuthChange, signIn, signOut } from "./auth.js";
+import { effectiveTheme, toggleTheme } from "./theme.js";
 import { el, clear, icon, rawSvg, revealOnScroll } from "./ui.js";
 import { loadData, renderBoard, syncFromServer } from "./board.js";
 import { renderProfile, renderSubscription, renderLocked, refreshFeedBadge, feedUnread } from "./profile.js";
@@ -84,13 +85,31 @@ function brandNode() {
 
 // --- навігація -----------------------------------------------------
 
+// Кнопка «денна / нічна тема»: сонце, коли зараз денна, місяць — коли
+// нічна. Оновлює свою іконку на місці, без перемальовування меню.
+function themeToggle() {
+  const btn = el("button", {
+    class: "theme-toggle", type: "button", title: "Денна / нічна тема", "aria-label": "Змінити тему",
+  });
+  const paint = () => {
+    clear(btn);
+    btn.appendChild(icon(effectiveTheme() === "dark" ? "moon" : "sun", { size: 18, stroke: 2.2 }));
+  };
+  paint();
+  btn.addEventListener("click", () => { toggleTheme(); paint(); });
+  return btn;
+}
+
 function paintNav() {
   clear(nav);
   nav.appendChild(brandNode());
 
   const session = loadSession();
   if (!session) {
-    nav.appendChild(el("button", { class: "btn btn-primary btn-sm nav__cta", text: "Увійти через Google", onclick: signIn }));
+    nav.appendChild(el("div", { class: "nav__cta" }, [
+      themeToggle(),
+      el("button", { class: "btn btn-primary btn-sm", text: "Увійти через Google", onclick: signIn }),
+    ]));
     return;
   }
 
@@ -101,6 +120,7 @@ function paintNav() {
     if (entitlement.is_admin) links.appendChild(navLink("#/admin", "Адмін"));
   }
   nav.appendChild(links);
+  nav.appendChild(themeToggle());
   nav.appendChild(userMenu(session));
 }
 
