@@ -9,7 +9,7 @@ import {
   getSubscription, saveSubscription, cancelSubscription,
   getFeed, markFeedRead, requestAccess,
 } from "./api.js";
-import { el, clear, fmtPrice, fmtWhen, fmtDate, siteLabel, displayTitle, toast } from "./ui.js";
+import { el, clear, icon, fmtPrice, fmtWhen, fmtDate, siteLabel, displayTitle, toast } from "./ui.js";
 
 let unread = 0;
 export function feedUnread() { return unread; }
@@ -24,7 +24,7 @@ export function refreshFeedBadge() {
 export function renderLocked(root, entitlement) {
   clear(root);
   const box = el("div", { class: "panel panel--narrow center" }, [
-    el("div", { class: "lock-icon", text: "🔒" }),
+    el("div", { class: "lock-icon" }, [icon("lock", { size: 30, stroke: 1.8 })]),
     el("h1", { class: "panel__title", text: "Підписка неактивна" }),
     el("p", { class: "muted", text:
       entitlement.status === "active"
@@ -208,7 +208,7 @@ function loadFeed(panel) {
     panel.querySelector("#feedReadAll").hidden = !unread;
     if (!items.length) {
       list.appendChild(el("div", { class: "empty" }, [
-        el("div", { class: "empty__icon", text: "📭" }),
+        el("div", { class: "empty__icon" }, [icon("bell", { size: 30, stroke: 1.8 })]),
         el("div", { class: "empty__title", text: "Стрічка порожня" }),
         el("p", { class: "empty__text", text: "Створи розсилку вище — і нові квартири з'являтимуться тут." }),
       ]));

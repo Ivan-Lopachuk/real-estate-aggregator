@@ -32,6 +32,34 @@ export function rawSvg(markup) {
   return t.content.firstChild;
 }
 
+// Набір акуратних лінійних іконок (24×24, колір успадковується через
+// currentColor). Замість «примітивних» емодзі на кнопках і в підказках.
+const ICON_PATHS = {
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>',
+  home: '<path d="M3 10.7 12 3.5l9 7.2"/><path d="M5.2 9.4V20a1 1 0 0 0 1 1h11.6a1 1 0 0 0 1-1V9.4"/><path d="M9.7 21v-5.2a1 1 0 0 1 1-1h2.6a1 1 0 0 1 1 1V21"/>',
+  star: '<path d="M12 3.5l2.6 5.3 5.9.86-4.25 4.14 1 5.87L12 17.9l-5.25 2.76 1-5.87L3.5 9.66l5.9-.86z"/>',
+  inbox: '<path d="M3 13h4l1.5 3h7L17 13h4"/><path d="M4.2 13 6 5.4a2 2 0 0 1 1.95-1.5h8.1A2 2 0 0 1 18 5.4L19.8 13v4.6a2 2 0 0 1-2 2H6.2a2 2 0 0 1-2-2z"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.6 2.2a.6.6 0 0 1-.5 1H4.9a.6.6 0 0 1-.5-1z"/><path d="M9.5 20.5a2.5 2.5 0 0 0 5 0"/>',
+  lock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+};
+
+/** SVG-іконка з набору. opts: { size, stroke } */
+export function icon(name, { size = 20, stroke = 2 } = {}) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", size);
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", stroke);
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  svg.classList.add("icon");
+  svg.innerHTML = ICON_PATHS[name] || "";
+  return svg;
+}
+
 /**
  * Додає клас .in елементам .reveal, коли вони з'являються у вікні —
  * для плавної появи секцій при прокручуванні.

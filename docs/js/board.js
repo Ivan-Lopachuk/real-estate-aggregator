@@ -15,7 +15,7 @@ import {
   chatSearch, getSeen, putSeen, getFavorites, putFavorites, loadSession,
 } from "./api.js";
 import {
-  el, clear, fmtPrice, fmtWhen, siteLabel, displayTitle, metaLine, buildMapLink, toast,
+  el, clear, icon, fmtPrice, fmtWhen, siteLabel, displayTitle, metaLine, buildMapLink, toast,
 } from "./ui.js";
 
 const SEEN_KEY = "reab:opened";
@@ -206,9 +206,9 @@ function markSeen(l) {
 
 // --- порожні стани -------------------------------------------------
 
-function emptyState(icon, title, text, withSuggestions) {
+function emptyState(iconName, title, text, withSuggestions) {
   const box = el("div", { class: "empty" }, [
-    el("div", { class: "empty__icon", text: icon }),
+    el("div", { class: "empty__icon" }, [icon(iconName, { size: 30, stroke: 1.8 })]),
     el("div", { class: "empty__title", text: title }),
     el("p", { class: "empty__text", text: text }),
   ]);
@@ -242,11 +242,20 @@ export function renderBoard(root) {
         class: "search__input", id: "chatInput", type: "text", autocomplete: "off",
         placeholder: "напр. квартира в Антверпені до 700€, за останні 2 дні",
       });
+      const field = el("div", { class: "search__field" }, [
+        icon("search", { size: 19, stroke: 2.2 }),
+        input,
+      ]);
       const form = el("form", { class: "search__bar", onsubmit: (e) => {
         e.preventDefault();
         const t = input.value.trim();
         if (t) { input.value = ""; runSearch(t); }
-      } }, [input, el("button", { class: "btn btn-primary", type: "submit", text: "🔍 Шукати" })]);
+      } }, [
+        field,
+        el("button", { class: "btn btn-primary search__submit", type: "submit" }, [
+          icon("search", { size: 18, stroke: 2.4 }), " Шукати",
+        ]),
+      ]);
       return form;
     })(),
     el("div", { class: "search__reply", id: "chatReply", hidden: "" }),
@@ -300,16 +309,16 @@ function render() {
     return;
   }
   if (mode === "favorites") {
-    list.appendChild(emptyState("⭐", "В обраному порожньо",
+    list.appendChild(emptyState("star", "В обраному порожньо",
       "Натисни зірку на будь-якій картці — і оголошення з'явиться тут.", false));
   } else if (mode === "since") {
-    list.appendChild(emptyState("📭", "Нічого нового",
+    list.appendChild(emptyState("inbox", "Нічого нового",
       "Із цього листа нових оголошень не лишилось.", false));
   } else if (mode === "search") {
-    list.appendChild(emptyState("🔍", "Нічого не знайдено",
+    list.appendChild(emptyState("search", "Нічого не знайдено",
       "Спробуй змінити запит — інше місто, вищу ціну або менше кімнат.", false));
   } else {
-    list.appendChild(emptyState("🏠", "Почни з пошуку",
+    list.appendChild(emptyState("home", "Почни з пошуку",
       "Напиши запит угорі — AI перевірить Immoweb і Immovlan.", true));
   }
 }
