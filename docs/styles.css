@@ -23,8 +23,9 @@
   --border-strong: #dedee9;
   --primary: #00c8c9;          /* бірюзовий акцент IQOS */
   --primary-strong: #00a9aa;
-  --primary-ink: #0a1f4d;      /* текст, що лягає поверх бірюзового */
+  --primary-ink: #0a1f4d;      /* текст ПОВЕРХ суцільного бірюзового (--primary) */
   --primary-soft: #e2fafa;
+  --on-tint: #0a1f4d;          /* текст на світло-бірюзовому тлі (--primary-soft): бейджі, активний пункт меню, чипи */
   --danger: #e23c56;
   --danger-soft: #fdecef;
   --ok: #0f9d6b;
@@ -58,6 +59,7 @@
     --primary: #2fe3e4;
     --primary-strong: #57ebec;
     --primary-ink: #08183b;
+    --on-tint: #9af1f2;
     --primary-soft: rgba(47, 227, 228, .14);
     --danger: #ff6b81;
     --danger-soft: rgba(255, 107, 129, .14);
@@ -83,6 +85,7 @@
   --primary: #2fe3e4;
   --primary-strong: #57ebec;
   --primary-ink: #08183b;
+  --on-tint: #9af1f2;
   --primary-soft: rgba(47, 227, 228, .14);
   --danger: #ff6b81;
   --danger-soft: rgba(255, 107, 129, .14);
@@ -149,7 +152,7 @@ img { max-width: 100%; }
 .btn-ghost:hover { border-color: var(--ink); color: var(--ink); background: var(--surface-2); }
 .btn-danger { --btn-bg: transparent; --btn-fg: var(--danger); --btn-bd: color-mix(in srgb, var(--danger) 40%, transparent); }
 .btn-danger:hover { background: var(--danger-soft); }
-.btn.is-on { --btn-bg: var(--ink); --btn-fg: #fff; --btn-bd: var(--ink); }
+.btn.is-on { --btn-bg: var(--primary); --btn-fg: var(--primary-ink); --btn-bd: var(--primary); font-weight: 700; }
 
 .select {
   font: inherit;
@@ -204,7 +207,8 @@ img { max-width: 100%; }
   background: linear-gradient(120deg, var(--primary-strong), #1170d8);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.nav__cta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.nav__cta { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.nav__right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .nav__links { display: flex; align-items: center; gap: 4px; margin-right: auto; }
 
 /* кнопка денної / нічної теми */
@@ -214,7 +218,6 @@ img { max-width: 100%; }
   flex: none;
   width: 38px;
   height: 38px;
-  margin-left: 4px;
   border-radius: 50%;
   border: 1.5px solid var(--border-strong);
   background: var(--surface);
@@ -240,7 +243,7 @@ img { max-width: 100%; }
   border-radius: 999px;
 }
 .nav__link:hover { color: var(--ink); background: var(--surface-2); }
-.nav__link.is-active { color: var(--primary-ink); background: var(--primary-soft); }
+.nav__link.is-active { color: var(--on-tint); background: var(--primary-soft); font-weight: 700; }
 .nav__badge {
   display: inline-flex;
   min-width: 18px;
@@ -258,7 +261,7 @@ img { max-width: 100%; }
 }
 /* --- меню користувача (аватар + ник + випадний список) ---------- */
 
-.user-menu { position: relative; margin-left: auto; }
+.user-menu { position: relative; }
 .user-chip {
   display: flex;
   align-items: center;
@@ -394,7 +397,7 @@ img { max-width: 100%; }
   padding: 8px 18px;
   border-radius: 999px;
   background: var(--primary-soft);
-  color: var(--primary-ink);
+  color: var(--on-tint);
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: .02em;
@@ -596,7 +599,7 @@ img { max-width: 100%; }
   vertical-align: 1px;
   line-height: 1.4;
   background: var(--primary-soft);
-  color: var(--primary-ink);
+  color: var(--on-tint);
   text-transform: uppercase;
   letter-spacing: .03em;
 }
@@ -638,7 +641,7 @@ img { max-width: 100%; }
   cursor: pointer;
   border: 1.5px solid var(--border-strong);
   background: var(--surface);
-  color: var(--primary-ink);
+  color: var(--on-tint);
   border-radius: 999px;
   padding: 9px 18px;
 }
@@ -739,7 +742,7 @@ img { max-width: 100%; }
   padding: 12px 22px;
   border-radius: 999px;
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
   font-size: 13px;
   font-weight: 600;
   box-shadow: var(--shadow-md);

@@ -277,7 +277,12 @@ export function renderBoard(root, opts = {}) {
     el("div", { class: "board-bar__actions" }, [
       el("button", { class: "btn btn-sm" + (onlyUnseen ? " is-on" : ""), id: "unseenBtn",
         text: onlyUnseen ? "Показано: тільки нові" : "Тільки непереглянуті",
-        onclick: () => { onlyUnseen = !onlyUnseen; render(); } }),
+        onclick: function () {
+          onlyUnseen = !onlyUnseen;
+          this.classList.toggle("is-on", onlyUnseen);
+          this.textContent = onlyUnseen ? "Показано: тільки нові" : "Тільки непереглянуті";
+          render();
+        } }),
       el("button", { class: "btn btn-sm", text: "Позначити всі переглянутими", onclick: markAll }),
       (() => {
         const sel = el("select", { class: "select select--sm", onchange: (e) => { sortBy = e.target.value; render(); } }, [

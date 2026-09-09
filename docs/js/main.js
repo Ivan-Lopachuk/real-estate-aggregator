@@ -120,8 +120,7 @@ function paintNav() {
     if (entitlement.is_admin) links.appendChild(navLink("#/admin", "Адмін"));
   }
   nav.appendChild(links);
-  nav.appendChild(themeToggle());
-  nav.appendChild(userMenu(session));
+  nav.appendChild(el("div", { class: "nav__right" }, [themeToggle(), userMenu(session)]));
 }
 
 function navLink(hash, text, extra) {
