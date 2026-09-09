@@ -25,6 +25,30 @@ export function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
+/** Створює вузол зі шматка розмітки (напр. вбудований <svg>). */
+export function rawSvg(markup) {
+  const t = document.createElement("template");
+  t.innerHTML = markup.trim();
+  return t.content.firstChild;
+}
+
+/**
+ * Додає клас .in елементам .reveal, коли вони з'являються у вікні —
+ * для плавної появи секцій при прокручуванні.
+ */
+export function revealOnScroll(root) {
+  if (!("IntersectionObserver" in window)) {
+    root.querySelectorAll(".reveal").forEach((n) => n.classList.add("in"));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+  root.querySelectorAll(".reveal").forEach((n) => io.observe(n));
+}
+
 export function show(node, visible = true) {
   if (node) node.hidden = !visible;
 }
