@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-09-15T19:04:46+00:00",
+ "generated_utc": "2026-09-15T20:05:59+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21843316",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21843316",
+   "title": "Apartment · 1 спалень · Sint-Gillis-Dendermonde",
+   "price": 780.0,
+   "price_previous": null,
+   "extra_costs": 0.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 104.0,
+   "locality": "Sint-Gillis-Dendermonde",
+   "postal_code": "9200",
+   "street": null,
+   "house_number": null,
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/6b0fcbba-3e0d-4f08-b53d-bd664e9b9f49/300x300/d2343cf9088d1e97843213c698bd924d.jpg",
+   "fiber_available": null,
+   "first_seen_utc": "2026-09-15T20:05:57+00:00"
+  },
   {
    "uid": "immoweb:21843324",
    "site": "immoweb",
