@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-18T13:05:04+00:00",
+ "generated_utc": "2026-09-18T14:05:29+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
@@ -60,8 +60,8 @@
    "living_area": null,
    "locality": "Gent",
    "postal_code": "9000",
-   "street": null,
-   "house_number": null,
+   "street": "Kortrijksesteenweg",
+   "house_number": "359",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/15d7c1c0-a584-4ad5-b910-1856b1d75bf9/300x300/b7e83156863e73a5ffd2a37e403731e6.heic",
    "fiber_available": null,
    "first_seen_utc": "2026-09-17T16:06:05+00:00"
