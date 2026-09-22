@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-22T21:05:07+00:00",
+ "generated_utc": "2026-09-22T22:05:04+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
@@ -43,7 +43,13 @@
    "house_number": "42",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/2442c0d8-4f71-468c-a7b8-0b47b40fc7db/300x300/26bf5333d8b602e69248fef3d6ceb7dc.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-22T20:05:17+00:00"
+   "first_seen_utc": "2026-09-22T20:05:17+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9300/aalst/rbw97558"
+    }
+   ]
   },
   {
    "uid": "immoweb:21860078",
