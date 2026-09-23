@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-09-23T07:06:04+00:00",
+ "generated_utc": "2026-09-23T08:05:36+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21861557",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21861557",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 760.0,
+   "price_previous": null,
+   "extra_costs": 130.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 43.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Karel Van Hulthemstraat",
+   "house_number": "116",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/c0b1891a-b4bc-4245-8875-6686e7c40125/300x300/1bc460aa49f3dce107e847b0a8f3c9bf.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-09-23T08:05:24+00:00"
+  },
   {
    "uid": "immoweb:21861087",
    "site": "immoweb",
