@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-09-28T02:05:33+00:00",
+ "generated_utc": "2026-09-28T03:06:29+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21871869",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21871869",
+   "title": "Apartment · 1 спалень · Sint-Niklaas",
+   "price": 750.0,
+   "price_previous": null,
+   "extra_costs": 110.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 70.0,
+   "locality": "Sint-Niklaas",
+   "postal_code": "9100",
+   "street": "Koningin Fabiolapark",
+   "house_number": "654",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/8bb80e26-3cb8-450c-b430-c62f0e7b8153/300x300/901471589615a4f58e3cd707a90604b3.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-28T03:06:23+00:00"
+  },
   {
    "uid": "immoweb:21871235",
    "site": "immoweb",
