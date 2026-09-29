@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-09-29T14:07:50+00:00",
+ "generated_utc": "2026-09-29T15:09:13+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21876956",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21876956",
+   "title": "Apartment · 1 спалень · Aalst",
+   "price": 600.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 45.0,
+   "locality": "Aalst",
+   "postal_code": "9300",
+   "street": "Moorselbaan",
+   "house_number": "187",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/146e99b8-bb8e-4b9f-af5b-aa8577c77eda/300x300/b24f99fadb155b74da8a8ed7b075c70c.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-09-29T15:09:07+00:00"
+  },
   {
    "uid": "immoweb:21765399",
    "site": "immoweb",
