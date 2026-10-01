@@ -1,0 +1,28 @@
+{
+  "place": "Gent",
+  "search": {
+    "transaction": "rent",
+    "property_types": [
+      "house",
+      "apartment"
+    ],
+    "price_min": 500.0,
+    "price_max": 850.0,
+    "bedrooms_min": 1,
+    "bedrooms_max": 2,
+    "living_area_min": 40.0,
+    "postal_codes": [
+      "9000"
+    ],
+    "localities": [
+      "Gent"
+    ]
+  },
+  "interval_hours": 6,
+  "notify_email": "viktorboiko1977@gmail.com",
+  "google_sub": "110792145565387620654",
+  "login_email": "viktorboiko1977@gmail.com",
+  "created_utc": "2026-10-01T13:40:41+00:00",
+  "updated_utc": "2026-10-01T13:40:41+00:00",
+  "last_sent_utc": null
+}
