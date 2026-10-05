@@ -1,5 +1,5 @@
 {
-  "place": "Gent",
+  "place": "Gent, Mariakerke, Drongen, Wondelgem, Sint-Amandsberg, Oostekker, Desteldonk, Mendonk, Sint- Kruis-Winkel, Gentbrugge, Ledeberg, Afsnee, Sint-Denjis-Western, Zwijnaarde, Lochristi, Melle, Gontrode, Merelbeke, Lovendegem, Wetteren",
   "search": {
     "transaction": "rent",
     "property_types": [
@@ -12,10 +12,44 @@
     "bedrooms_max": 2,
     "living_area_min": 40.0,
     "postal_codes": [
-      "9000"
+      "9000",
+      "9030",
+      "8400",
+      "9031",
+      "9032",
+      "9040",
+      "9041",
+      "9042",
+      "9050",
+      "9051",
+      "9052",
+      "9080",
+      "9090",
+      "9820",
+      "9920",
+      "9230"
     ],
     "localities": [
-      "Gent"
+      "Gent",
+      "Mariakerke",
+      "Drongen",
+      "Wondelgem",
+      "Sint-Amandsberg",
+      "Oostakker",
+      "Desteldonk",
+      "Mendonk",
+      "Sint-Kruis-Winkel",
+      "Gentbrugge",
+      "Ledeberg",
+      "Afsnee",
+      "Sint-Denijs-Westrem",
+      "Zwijnaarde",
+      "Lochristi",
+      "Melle",
+      "Gontrode",
+      "Merelbeke",
+      "Lovendegem",
+      "Wetteren"
     ]
   },
   "interval_hours": 6,
@@ -23,6 +57,6 @@
   "google_sub": "110792145565387620654",
   "login_email": "viktorboiko1977@gmail.com",
   "created_utc": "2026-10-01T13:40:41+00:00",
-  "updated_utc": "2026-10-01T13:40:41+00:00",
-  "last_sent_utc": "2026-10-05T08:00:44+00:00"
+  "updated_utc": "2026-10-05T14:54:12+00:00",
+  "last_sent_utc": null
 }
