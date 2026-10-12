@@ -1,8 +1,113 @@
 {
- "generated_utc": "2026-10-12T08:30:11+00:00",
+ "generated_utc": "2026-10-12T18:26:20+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21906896",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21906896",
+   "title": "House · 1 спалень · Gent",
+   "price": 840.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "house",
+   "bedrooms": 1,
+   "living_area": 66.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Ooievaarstraat",
+   "house_number": "147",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/f660f53f-3395-478a-a813-3155b6134970/300x300/28a2b68143cf7f20334c3d2fd86f9b02.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-12T18:26:15+00:00"
+  },
+  {
+   "uid": "immoweb:21907135",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21907135",
+   "title": "Apartment · 3 спалень · Gent",
+   "price": 1100.0,
+   "price_previous": null,
+   "extra_costs": 250.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 3,
+   "living_area": null,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Koepoortkaai",
+   "house_number": "43",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/e9c44ad0-fd98-4d33-915b-833660a11acb/300x300/7955dc52f62745bff7feaaa8f4a56444.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-12T18:25:31+00:00"
+  },
+  {
+   "uid": "immoweb:21908656",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21908656",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 800.0,
+   "price_previous": null,
+   "extra_costs": 75.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 60.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Keramiekstraat",
+   "house_number": "8",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/00011fe7-297f-457c-8739-840729e8cf7c/300x300/eacbbdeaf4c58075a5fb1670864db087.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-12T18:24:56+00:00"
+  },
+  {
+   "uid": "immoweb:21907810",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21907810",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 775.0,
+   "price_previous": null,
+   "extra_costs": 65.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 53.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Wilderoosstraat",
+   "house_number": "90",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/a9378b05-01ca-4dfa-a479-27305b3b6d3a/300x300/0b1375da43f3f65c291121fff4646756.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-12T18:24:56+00:00"
+  },
+  {
+   "uid": "immoweb:21907539",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21907539",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 800.0,
+   "price_previous": null,
+   "extra_costs": 25.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": null,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Sint-Jansvest",
+   "house_number": "14c",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/ba60528d-d2d1-43b9-af1a-1e493483d47e/300x300/01deb75ed76804d8af94e1db1ba7c538.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-12T18:24:56+00:00"
+  },
   {
    "uid": "immoweb:21905755",
    "site": "immoweb",
@@ -4541,7 +4646,13 @@
    "house_number": "36",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/1ce0f8d0-a445-40e2-b138-10d9b78f48cb/300x300/78cce6e26eb469502eb141d9f4f41423.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-21T21:04:57+00:00"
+   "first_seen_utc": "2026-09-21T21:04:57+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbx15724"
+    }
+   ]
   },
   {
    "uid": "immoweb:21857442",
@@ -6206,7 +6317,13 @@
    "house_number": "129",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/0fe00aa5-c62b-4eb4-81db-13b7eb305848/300x300/7c89f20929a2f6ca651e14676d34c7f0.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-04T18:56:12+00:00"
+   "first_seen_utc": "2026-09-04T18:56:12+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/vbe78347"
+    }
+   ]
   },
   {
    "uid": "immoweb:21802314",
