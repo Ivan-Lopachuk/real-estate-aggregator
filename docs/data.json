@@ -1,8 +1,71 @@
 {
- "generated_utc": "2026-10-14T10:55:37+00:00",
+ "generated_utc": "2026-10-14T15:40:09+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21915032",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21915032",
+   "title": "House · 3 спалень · Gent",
+   "price": 1100.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "house",
+   "bedrooms": 3,
+   "living_area": 125.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Klapeksterstraat",
+   "house_number": "17",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/7cfa4c81-d4e9-4fb9-82c7-c7ec1ab24b4a/300x300/b9c1606a33e2376dcf23f624791bb62c.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-14T15:40:01+00:00"
+  },
+  {
+   "uid": "immoweb:21914714",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21914714",
+   "title": "Apartment · 2 спалень · Mechelen",
+   "price": 1100.0,
+   "price_previous": null,
+   "extra_costs": 100.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 89.0,
+   "locality": "Mechelen",
+   "postal_code": "2800",
+   "street": "Lange Schipstraat",
+   "house_number": "32",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/4f90957f-3769-4e1c-bc2f-60c2510c3e3d/300x300/f32f3d9b7631b3e4c822ca7079292a89.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-14T15:40:01+00:00"
+  },
+  {
+   "uid": "immoweb:21915085",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21915085",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 695.0,
+   "price_previous": null,
+   "extra_costs": 220.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 53.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Hendrik Van Brederodestraat",
+   "house_number": "60",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/a4f44d49-c02f-4ae4-bdc9-4a754b980f61/300x300/b8b5cc27d915020b01f2a0857fb3fec1.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-14T15:39:23+00:00"
+  },
   {
    "uid": "immoweb:21835707",
    "site": "immoweb",
@@ -4793,7 +4856,13 @@
    "house_number": "91",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/35153f79-f498-4441-a03b-fb7e03ff9b60/300x300/efc80871fe043b0b6411c382c01533de.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-22T12:06:39+00:00"
+   "first_seen_utc": "2026-09-22T12:06:39+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/studio/for-rent/9000/gent/rbx16624"
+    }
+   ]
   },
   {
    "uid": "immoweb:21857730",
