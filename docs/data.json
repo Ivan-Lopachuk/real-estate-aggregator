@@ -1,8 +1,92 @@
 {
- "generated_utc": "2026-10-19T05:32:04+00:00",
+ "generated_utc": "2026-10-19T11:42:55+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21924647",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21924647",
+   "title": "House · 2 спалень · Lier",
+   "price": 980.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "house",
+   "bedrooms": 2,
+   "living_area": 105.0,
+   "locality": "Lier",
+   "postal_code": "2500",
+   "street": "Molenlaan",
+   "house_number": "2",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/924c9638-22a8-4b23-984b-a884fd7ee4f3/300x300/c1b107e881346bfc36e7222cc2720325.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-19T11:41:58+00:00"
+  },
+  {
+   "uid": "immoweb:21924646",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21924646",
+   "title": "Apartment · 2 спалень · Lier",
+   "price": 1100.0,
+   "price_previous": null,
+   "extra_costs": 75.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 103.0,
+   "locality": "Lier",
+   "postal_code": "2500",
+   "street": "Mechelsesteenweg",
+   "house_number": "109",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/6d08eee4-d4eb-40e4-b1ae-38df13a17f28/300x300/983e230156069b5e1eafd457cb9bd59a.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-19T11:41:58+00:00"
+  },
+  {
+   "uid": "immoweb:21924276",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21924276",
+   "title": "Apartment · 2 спалень · Gent",
+   "price": 930.0,
+   "price_previous": null,
+   "extra_costs": 250.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 80.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Bernard Spaelaan",
+   "house_number": "51",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/fed6d827-e2ab-47a1-a91e-6c13fb63cb8a/300x300/b0f5d3cfd020aceaf2c715b49c0a9cba.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-19T11:41:58+00:00"
+  },
+  {
+   "uid": "immoweb:21841815",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21841815",
+   "title": "House · 2 спалень · Lier",
+   "price": 850.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "house",
+   "bedrooms": 2,
+   "living_area": null,
+   "locality": "Lier",
+   "postal_code": "2500",
+   "street": "Hoogveldweg",
+   "house_number": "1",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/06ddd458-6a3a-4740-a5bd-db622d230f3a/300x300/d6c6880bff76624d22c1a7fb86661c8e.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-19T11:41:58+00:00"
+  },
   {
    "uid": "immoweb:21923376",
    "site": "immoweb",
@@ -3230,6 +3314,10 @@
    "also_on": [
     {
      "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbx20321"
+    },
+    {
+     "site": "immovlan",
      "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbw86879"
     }
    ]
@@ -3276,6 +3364,10 @@
    "fiber_available": true,
    "first_seen_utc": "2026-10-01T13:46:59+00:00",
    "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbx20317"
+    },
     {
      "site": "immovlan",
      "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rwc42723"
