@@ -1,8 +1,50 @@
 {
- "generated_utc": "2026-10-27T19:09:07+00:00",
+ "generated_utc": "2026-10-27T23:25:17+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21947256",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21947256",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 570.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 138.0,
+   "locality": "Gent",
+   "postal_code": "9040",
+   "street": "Zavelput",
+   "house_number": "54",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/e378c2de-2034-42fa-9f8d-88593011d4fb/300x300/ad4d52f95a76fe8a279f45cc8bec7497.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-27T23:25:12+00:00"
+  },
+  {
+   "uid": "immoweb:21948181",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21948181",
+   "title": "Apartment · 2 спалень · Gent",
+   "price": 1100.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 87.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Waldamkaai",
+   "house_number": "8",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/64dc5b95-a2ec-46b0-90dd-a93cf37d2cea/300x300/78e60acfc7dc00586ed4b2b65b22ffc7.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-27T23:24:29+00:00"
+  },
   {
    "uid": "immoweb:21947933",
    "site": "immoweb",
@@ -4666,6 +4708,10 @@
    "fiber_available": true,
    "first_seen_utc": "2026-10-01T13:46:59+00:00",
    "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbx25419"
+    },
     {
      "site": "immovlan",
      "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbx20317"
