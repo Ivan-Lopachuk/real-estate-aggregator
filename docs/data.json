@@ -1,8 +1,50 @@
 {
- "generated_utc": "2026-10-30T10:40:01+00:00",
+ "generated_utc": "2026-10-30T16:56:04+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21955317",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21955317",
+   "title": "Apartment · 2 спалень · Lier",
+   "price": 1075.0,
+   "price_previous": null,
+   "extra_costs": 100.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 82.0,
+   "locality": "Lier",
+   "postal_code": "2500",
+   "street": "Pettendonk",
+   "house_number": "13",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/a2907f7d-672c-4420-8f8d-553fa973c1ae/300x300/e3dcc943bfcbf4574d5b60db9009083f.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-30T16:55:23+00:00"
+  },
+  {
+   "uid": "immovlan:rwc43829",
+   "site": "immovlan",
+   "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rwc43829",
+   "title": "Apartment · 3 спалень · Gent",
+   "price": 975.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 3,
+   "living_area": 11011.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": null,
+   "house_number": null,
+   "photo_url": "https://api-image.immovlan.be/v1/property/RWC43829/thumbnail-webp/Medium?h=280",
+   "fiber_available": null,
+   "first_seen_utc": "2026-10-30T16:55:23+00:00"
+  },
   {
    "uid": "immoweb:21954900",
    "site": "immoweb",
@@ -5961,6 +6003,10 @@
    "fiber_available": true,
    "first_seen_utc": "2026-10-01T13:46:59+00:00",
    "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rwc43826"
+    },
     {
      "site": "immovlan",
      "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rwc43605"
