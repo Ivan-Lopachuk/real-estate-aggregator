@@ -1,8 +1,50 @@
 {
- "generated_utc": "2026-10-31T07:48:55+00:00",
+ "generated_utc": "2026-10-31T14:08:32+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21957349",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21957349",
+   "title": "Apartment · 2 спалень · Mechelen",
+   "price": 600.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": null,
+   "locality": "Mechelen",
+   "postal_code": "2800",
+   "street": "Leermarkt",
+   "house_number": "1",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/713639de-e441-486c-a077-582a1dcd3afe/300x300/f6f0abb9ecc88b93f1a952f4060e8353.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-10-31T14:07:39+00:00"
+  },
+  {
+   "uid": "immoweb:21957429",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21957429",
+   "title": "Apartment · 1 спалень · Kortrijk",
+   "price": 690.0,
+   "price_previous": null,
+   "extra_costs": 50.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 65.0,
+   "locality": "Kortrijk",
+   "postal_code": "8500",
+   "street": "Ten Akkerdreef",
+   "house_number": "1b",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/78311f53-7348-406e-ae7a-bf02fc2cb76a/300x300/853cbc344ac8967b58939d3c60731f5d.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-10-31T14:06:45+00:00"
+  },
   {
    "uid": "immoweb:21956743",
    "site": "immoweb",
@@ -6666,7 +6708,13 @@
    "house_number": "4b",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/0dfcd85b-ee4c-4345-93bd-dbcb3cd47208/300x300/7394bd835d425c9e5bfac0f3e37e9649.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-09-29T17:36:44+00:00"
+   "first_seen_utc": "2026-09-29T17:36:44+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/vbe86110"
+    }
+   ]
   },
   {
    "uid": "immoweb:21867390",
