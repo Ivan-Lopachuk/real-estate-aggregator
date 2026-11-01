@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-11-01T08:29:18+00:00",
+ "generated_utc": "2026-11-01T15:39:57+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21958069",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21958069",
+   "title": "Apartment · 2 спалень · Mechelen",
+   "price": 975.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": null,
+   "locality": "Mechelen",
+   "postal_code": "2800",
+   "street": "Draaibankstraat",
+   "house_number": "112",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/6ae1bf05-020b-4db3-9592-ead21f27373c/300x300/db85cec8aa05503b76e49dac54aaa073.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-11-01T15:39:10+00:00"
+  },
   {
    "uid": "immoweb:21957596",
    "site": "immoweb",
