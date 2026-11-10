@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-11-10T17:25:59+00:00",
+ "generated_utc": "2026-11-10T22:42:04+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21981601",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21981601",
+   "title": "Apartment · 2 спалень · Gent",
+   "price": 995.0,
+   "price_previous": null,
+   "extra_costs": 65.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 75.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Sint-Lievenslaan",
+   "house_number": "140",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/936e7303-a48a-4163-80ca-03360674056c/300x300/f6ac9b3b96696925ecaac0f9e4528b9a.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-11-10T22:42:03+00:00"
+  },
   {
    "uid": "immoweb:21979029",
    "site": "immoweb",
@@ -3352,7 +3373,13 @@
    "house_number": "257",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/522a6848-1643-47bc-bb68-f9dedd7b7010/300x300/a20782ced44da44173702601478ca3c1.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-10-15T12:20:54+00:00"
+   "first_seen_utc": "2026-10-15T12:20:54+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/ground-floor/for-rent/9000/gent/rbx36659"
+    }
+   ]
   },
   {
    "uid": "immoweb:21916771",
