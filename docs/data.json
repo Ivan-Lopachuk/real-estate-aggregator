@@ -1,8 +1,29 @@
 {
- "generated_utc": "2026-11-11T10:06:16+00:00",
+ "generated_utc": "2026-11-11T18:16:22+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21982146",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21982146",
+   "title": "Apartment · 2 спалень · Lier",
+   "price": 995.0,
+   "price_previous": null,
+   "extra_costs": 85.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": null,
+   "locality": "Lier",
+   "postal_code": "2500",
+   "street": "Lispersteenweg",
+   "house_number": "140",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/c6d042cd-36b4-498b-961b-ccf101d4ad27/300x300/c3e456a1816e1630dfc7282f15ed041a.jpg",
+   "fiber_available": false,
+   "first_seen_utc": "2026-11-11T18:15:42+00:00"
+  },
   {
    "uid": "immoweb:21981601",
    "site": "immoweb",
