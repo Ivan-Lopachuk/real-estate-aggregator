@@ -1,8 +1,71 @@
 {
- "generated_utc": "2026-11-16T07:29:52+00:00",
+ "generated_utc": "2026-11-16T17:43:54+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:21993600",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21993600",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 835.0,
+   "price_previous": null,
+   "extra_costs": 65.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 74.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Maaltebruggestraat",
+   "house_number": "44",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/b3e7bf2d-2834-4e00-b119-3205f0f60375/300x300/67b12c1c0026acca2e99e863b56a3629.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-11-16T17:43:48+00:00"
+  },
+  {
+   "uid": "immoweb:21993427",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21993427",
+   "title": "Apartment · 2 спалень · Gent",
+   "price": 920.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": null,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Koningin Fabiolalaan",
+   "house_number": "60",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/c203728c-c3f1-4021-b80f-a433cf0ac126/300x300/3dc5018e437c802d6bc798ef0f0110eb.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-11-16T17:43:03+00:00"
+  },
+  {
+   "uid": "immoweb:21991526",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/21991526",
+   "title": "House · 2 спалень · Gent",
+   "price": 1050.0,
+   "price_previous": null,
+   "extra_costs": null,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "house",
+   "bedrooms": 2,
+   "living_area": 90.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Lange Boomgaardstraat",
+   "house_number": "132",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/036ec40b-284b-460b-9fdd-d49f5a15ead3/300x300/fa37cfb91f69e3978d84a54d4adcec82.heic",
+   "fiber_available": true,
+   "first_seen_utc": "2026-11-16T17:43:03+00:00"
+  },
   {
    "uid": "immoweb:21990874",
    "site": "immoweb",
@@ -6500,7 +6563,13 @@
    "house_number": "93",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/1cbb4862-62ab-4cf8-b62b-63ff8e38a1d3/300x300/9c78a3cb8b5bafce75bc91ddd503c275.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-10-01T13:46:59+00:00"
+   "first_seen_utc": "2026-10-01T13:46:59+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/rbx40358"
+    }
+   ]
   },
   {
    "uid": "immoweb:21862885",
