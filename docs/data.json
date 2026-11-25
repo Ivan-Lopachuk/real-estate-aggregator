@@ -1,8 +1,71 @@
 {
- "generated_utc": "2026-11-24T18:32:08+00:00",
+ "generated_utc": "2026-11-25T02:54:09+00:00",
  "search_summary": "оренда · 600–800 € · 1 спалень · від 35 м² · Gent, Kortrijk",
  "recent_days": 90,
  "listings": [
+  {
+   "uid": "immoweb:22016147",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/22016147",
+   "title": "Apartment · 2 спалень · GENT",
+   "price": 950.0,
+   "price_previous": null,
+   "extra_costs": 75.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 2,
+   "living_area": 94.0,
+   "locality": "GENT",
+   "postal_code": "9000",
+   "street": "Baliestraat",
+   "house_number": "124",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/73a914a2-00e6-452f-9c38-d7b6117d3fa7/300x300/9f44f7dccd7155fac897602455a4f489.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-11-25T02:53:28+00:00"
+  },
+  {
+   "uid": "immoweb:22015886",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/22015886",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 740.0,
+   "price_previous": null,
+   "extra_costs": 0.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 41.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Belgradostraat",
+   "house_number": "25",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/8a713e3f-c479-4525-bd59-5da0bbc02ee6/300x300/c259b60d7a36fb9c844b6bc4856a3c6e.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-11-25T02:52:24+00:00"
+  },
+  {
+   "uid": "immoweb:22015797",
+   "site": "immoweb",
+   "url": "https://www.immoweb.be/en/classified/22015797",
+   "title": "Apartment · 1 спалень · Gent",
+   "price": 775.0,
+   "price_previous": null,
+   "extra_costs": 25.0,
+   "currency": "EUR",
+   "transaction": "rent",
+   "property_type": "apartment",
+   "bedrooms": 1,
+   "living_area": 36.0,
+   "locality": "Gent",
+   "postal_code": "9000",
+   "street": "Krijgsgasthuisstraat",
+   "house_number": "101",
+   "photo_url": "https://media-resize.immowebstatic.be/classifieds/4d671f32-af75-4267-b955-77ad349b9430/300x300/db3f4819e920674aabeffd9f80433ba4.jpg",
+   "fiber_available": true,
+   "first_seen_utc": "2026-11-25T02:52:24+00:00"
+  },
   {
    "uid": "immoweb:22015487",
    "site": "immoweb",
@@ -2344,7 +2407,13 @@
    "house_number": "49",
    "photo_url": "https://media-resize.immowebstatic.be/classifieds/385e1de7-1f0b-4501-9ccd-58f3c91bab9d/300x300/74c0db0484968416cc340602b3d06f37.jpg",
    "fiber_available": true,
-   "first_seen_utc": "2026-10-29T14:50:28+00:00"
+   "first_seen_utc": "2026-10-29T14:50:28+00:00",
+   "also_on": [
+    {
+     "site": "immovlan",
+     "url": "https://immovlan.be/en/detail/apartment/for-rent/9000/gent/vbe95703"
+    }
+   ]
   },
   {
    "uid": "immoweb:21952568",
